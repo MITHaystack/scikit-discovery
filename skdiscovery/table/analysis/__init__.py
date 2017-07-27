@@ -1,7 +1,6 @@
 from .correlate import Correlate
 from .gca import General_Component_Analysis
 from .mogi import Mogi_Inversion
-from .vdbscan import VDBScan
 from .skew import Skew
 from .midas import MIDAS
 from .outlier import Outlier
