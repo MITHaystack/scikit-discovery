@@ -10,7 +10,6 @@ package_list.insert(0, package_name)
 setup(name     = package_name,
       version  = '0.9.0',
       packages = package_list,
-      package_dir = {package_name: ''},
       zip_safe = False,
       install_requires = ['setuptools',
                           'numpy',
@@ -18,6 +17,12 @@ setup(name     = package_name,
                           'pandas',
                           'basemap',
                           'sklearn',
-                          'skdaccess']
+                          'skdaccess',
+                          'astropy',
+                          'statsmodels',
+                          'matplotlib',
+                          'boto3',
+                          'dispy',
+                          'seaborn']
        )
  
