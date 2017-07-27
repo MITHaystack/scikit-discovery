@@ -8,7 +8,7 @@ package_list.insert(0, package_name)
 
 
 setup(name     = package_name,
-      version  = '1.0',
+      version  = '0.9.0',
       packages = package_list,
       package_dir = {package_name: ''},
       zip_safe = False,
