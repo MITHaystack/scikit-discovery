@@ -79,4 +79,4 @@ def getHostName():
     '''
     conf = getConfig()
 
-    return conf.get('offload','hostname')
+    return conf.get('Dispy','hostname')

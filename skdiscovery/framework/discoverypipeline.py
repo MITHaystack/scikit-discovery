@@ -154,6 +154,7 @@ class DiscoveryPipeline:
                 self.RA_results.append(results)
 
             self.__cluster.stats()
+            self.__cluster.close()
 
         # Run the job on the local machine
         else:
@@ -379,6 +380,8 @@ class DiscoveryPipeline:
 
         @param secret: Password for dispy nodes
         '''
+
+        import dispy
         
         # Amazon run function
         def amazon_run(data_fetcher, stage_containers, run_id=-1):
@@ -391,28 +394,20 @@ class DiscoveryPipeline:
 
         self.__cluster = dispy.SharedJobCluster(amazon_run, secret=secret, port=0)
 
-        for i in range(1000):
-            try:
-                self._dispy_http = DispyHTTPServer(self.__cluster,port = 8181 + i)
-                self._dispy_http.port = 8181 + i
-                break
-            except OSError:
-                pass
+        # for i in range(1000):
+        #     try:
+        #         self._dispy_http = DispyHTTPServer(self.__cluster,port = 8181 + i)
+        #         self._dispy_http.port = 8181 + i
+        #         break
+        #     except OSError:
+        #         pass
 
             
     def _createDispyLink(self):
         ''' Create a link to the Dispy Cluster Information website '''
-        display(HTML('<a href="http://' + config.getHostName()  + ':8181" target="_blank">View cluster status</a>'))
         
-    def __del__(self):
-        ''' Shutdown dispy cluster manager '''
-        if self.__cluster != None:
-            self.__cluster.close()
-
-        if self._dispy_http != None:
-            self._dispy_http.shutdown(wait=False)
+        print("Access cluster monitor at http://hostname:8181 where hostname is the address of the primary host")
         
-
     def __str__(self):
         '''
         String representation of the pipeline.
