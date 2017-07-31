@@ -1,4 +1,4 @@
-# scikit-discovery
+# Scikit Discovery
 
 - Reusable pipeline for performing scientific analyses
 - Easily explore different analysis methods and parameters
