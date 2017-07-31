@@ -229,7 +229,7 @@ def startDispyNode():
     dispy_pass = config.getDispyPassword()
 
     if dispy_pass == None:
-        dispy_pass = ''.join([random.choice(string.ascii_letters + string.digits + '@#$%^&*()')
+        dispy_pass = ''.join([random.choice(string.ascii_letters + string.digits)
                               for x in range(20)])
         config.writeConfigValue('Dispy','password', dispy_pass)
 
