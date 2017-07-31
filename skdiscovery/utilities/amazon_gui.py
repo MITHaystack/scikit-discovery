@@ -156,7 +156,7 @@ def init():
             widget_dict['initialize_button'].description = 'Re-Initialize'
             widget_dict['new_num_instances_widget'].value = len(ac.amazon_list)
 
-            changeButtonState(enabled=True)
+        changeButtonState(enabled=True)
 
 
     widget_dict['initialize_button'].on_click(initialize_cluster)
