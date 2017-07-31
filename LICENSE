@@ -1,0 +1,13 @@
+All files except of skdsicovery/utilities/ssh_reverse.py are under the MIT License
+found in the file MIT_LICENSE
+
+skdsicovery/utilities/ssh_reverse.py is a modified file based on rforward.py located at
+https://github.com/paramiko/paramiko/blob/25dd096da065b1bc2f35c1a62d8a7055b022818b/demos/rforward.py
+
+This version removes the command line interface, global variables, and creates tunnels in a non blocking thread.
+An additional class has been added to facilitate the creation of tunnels
+
+The original version is Copyright (C) 2008 Robey Pointer <robeypointer@gmail.com>
+
+Since the original version is LGPL v2.1 or later, this is also LGPL v2.1 or later
+The LGPL v2.1 can be found in LGPL_LICENSE
