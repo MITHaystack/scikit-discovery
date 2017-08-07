@@ -30,8 +30,7 @@ import pandas as pd
 
 class Resample(PipelineItem):
     '''
-    Calibrate Grace Data, applying the scale factor and averaging across the 
-    three solutions.
+    Resample data
     '''
     
     def __init__(self, str_description, start_date = None, end_date = None, frequency='D'):
