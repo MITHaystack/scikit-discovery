@@ -155,6 +155,7 @@ class DiscoveryPipeline:
 
             self.__cluster.stats()
             self.__cluster.close()
+            self.__cluster = None
 
         # Run the job on the local machine
         else:
