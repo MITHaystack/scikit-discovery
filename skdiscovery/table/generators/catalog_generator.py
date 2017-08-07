@@ -24,8 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from skdaccess.framework.data_class import DataFetcherBase
-from skdaccess.framework.data_class import DataPanelWrapper
+from skdaccess.framework.data_class import DataFetcherBase, TableWrapper
 import pandas as pd
 import numpy as np
 from scipy.optimize import root
@@ -38,7 +37,7 @@ from skdiscovery.utilities.astro_tools import nfw, move_point
 
 class CatalogGenerator(DataFetcherBase):
     '''
-    Generates galaxy catalogs for use in DiscoveryPipeline
+    In Development: Generates galaxy catalogs for use in DiscoveryPipeline
     '''
 
     def __init__(self, ap_paramList, ra1,dec1, ra2, dec2, background_density, z):
@@ -127,7 +126,7 @@ class CatalogGenerator(DataFetcherBase):
 
         galaxies = pd.concat([galaxies, cluster_galaxies], axis=0).set_index(np.arange(len(galaxies) + len(cluster_galaxies)))
 
-        data_wrapper = DataPanelWrapper(pd.Panel.from_dict({'Cluster_Catalog_01' : galaxies}, orient='minor'), default_columns=['RA','Dec'])
+        data_wrapper = TableWrapper({'Cluster_Catalog_01' : galaxies}, default_columns=['RA','Dec'])
         
         return data_wrapper
 
