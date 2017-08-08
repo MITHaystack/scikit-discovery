@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2016 Massachusetts Institute of Technology
+# Copyright (c) 2017 Massachusetts Institute of Technology
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for

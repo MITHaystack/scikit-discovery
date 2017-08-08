@@ -1,8 +1,11 @@
 # The MIT License (MIT)
-# Copyright (c) 2016 Massachusetts Institute of Technology
+# Copyright (c) 2017 Massachusetts Institute of Technology
 #
-# Author: Cody Rude
-# This software is part of the NASA AIST Project "Computer-Aided Discovery of Earth Surface Deformation Phenomena" , PI: V. Pankratius
+# Authors: Victor Pankratius, Justin Li, Cody Rude
+# This software is part of the NSF DIBBS Project "An Infrastructure for
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Deformation Phenomena" (PI: V. Pankratius)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +23,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
 
 from six.moves import configparser
 import os

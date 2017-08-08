@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2016 Massachusetts Institute of Technology
+# Copyright (c) 2017 Massachusetts Institute of Technology
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software has been created in projects supported by the US National
@@ -30,7 +30,7 @@ from statsmodels.robust import mad
 
 class MIDAS(PipelineItem):
     '''
-    A python implementation of the Median Interannual Difference Adjusted for
+    In Development: A python implementation of the Median Interannual Difference Adjusted for
     Skewness (MIDAS) trend estimator from the Nevada Geodetic Laboratory. See
     http://onlinelibrary.wiley.com/doi/10.1002/2015JB012552/full for reference.
     '''

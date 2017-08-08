@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2015 Massachusetts Institute of Technology
+# Copyright (c) 2017 Massachusetts Institute of Technology
 #
 # Author: Justin D Li
 # This software is part of the NASA AIST Project "Computer-Aided Discovery of Earth Surface Deformation Phenomena" , PI: V. Pankratius
