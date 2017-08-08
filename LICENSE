@@ -1,4 +1,4 @@
-All files except of skdsicovery/utilities/ssh_reverse.py are under the MIT License
+All files except skdsicovery/utilities/ssh_reverse.py are under the MIT License
 found in the file MIT_LICENSE
 
 skdsicovery/utilities/ssh_reverse.py is a modified file based on rforward.py located at
