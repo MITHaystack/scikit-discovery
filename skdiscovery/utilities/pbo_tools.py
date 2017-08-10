@@ -83,6 +83,7 @@ def mogi(xdata, lat, lon, source_depth, amplitude):
 def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
     '''
     Compute the surface deformation due to changes in a finite sphere source
+
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 290
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
@@ -132,6 +133,7 @@ def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
 def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     '''
     Compute the surface deformation due to changes in a closed pipe source
+
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 292
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
@@ -182,6 +184,7 @@ def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
 def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     '''
     Compute the surface deformation due to changes in a constant width open pipe source
+
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 295
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
@@ -232,6 +235,7 @@ def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
 def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_pipe_top):
     '''
     Compute the surface deformation due to changes in a rising width amplitude open pipe source
+
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 295
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
@@ -283,6 +287,7 @@ def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_p
 def sill(xdata, lat, lon, source_depth, amplitude):
     '''
     Compute the surface deformation due to changes in a sill-like source
+
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 297
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
@@ -326,6 +331,7 @@ def sill(xdata, lat, lon, source_depth, amplitude):
 def dirEigenvectors(coord_list, pca_comps,pdir='H'):
     '''
     Takes eigenvectors (north and east) and forces them to point "outward"
+
     Flips the sign of the projection if needed so that eigenvectors point
     outward. Needed because the "positive" direction for PCA is arbitrary
 

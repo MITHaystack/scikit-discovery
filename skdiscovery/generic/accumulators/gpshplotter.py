@@ -68,8 +68,9 @@ class GPSHPlotter(PipelineItem):
         
     def process(self, obj_data):
         ''' 
-        Plot the General Component Analysis results present stored in obj_data. Saves the basemap in 
-        obj_data results.
+        Plot the General Component Analysis results present stored in obj_data. 
+
+        Saves the basemap in obj_data results.
         
         @param obj_data: Data Wrapper that holds component analysis HPCA
         '''

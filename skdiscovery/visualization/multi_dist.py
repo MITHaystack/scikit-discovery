@@ -40,8 +40,10 @@ sns.set(font='serif')
 
 def calc_distance_map(pipeline, ap_name, ca_name, ca_type ,plotFlag = True, histIdx = False, fontsize=10):
     """ 
-    Returns the distances/similarities between pipeline runs and visualizes the
-    result as a seaborn clustermap for PBO pipelines (requires multiple stations)
+    Calculates distances/similarities between pipeline runs
+
+    Optionally visualizes the result as a seaborn clustermap for PBO
+    pipelines (requires multiple stations)
 
     Calculates the square root of the summed squared differences between eigenvectors.
     Only works, because of internal assumptions, on pipelines with multiple stations

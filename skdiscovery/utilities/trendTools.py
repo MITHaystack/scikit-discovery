@@ -38,8 +38,9 @@ from scipy.ndimage import median_filter
 
 def getTrend(xdata):
     '''
-    The getTrend function applies the signal.detrend function, and
-    also returns the trend, given a time index input.
+    The getTrend function applies the signal.detrend function
+
+    Returns the trend, given a time index input.
     
     @param xdata: 1D time-series data in a pandas series format
     
@@ -72,8 +73,9 @@ def getTrend(xdata):
 
 def sinuFits(xdata,fitN=2,rmve=1):
     '''
-    The sinuFits function tries to fit annual and semi-annual sinusoid trends to
-    the data. Other options allow for a monthly and seasonal sinusoid fit. The
+    The sinuFits function fits annual and semi-annual sinusoid trends
+
+    Other options allow for a monthly and seasonal sinusoid fit. The
     data is expected to be in pandas format
 
     @param xdata: 1D time-series data in a pandas series format
@@ -130,9 +132,11 @@ def sinuFits(xdata,fitN=2,rmve=1):
     
 def interpNaN(data):
     '''
-    A simple wrapper for the linear interpolation function from Numpy to fill in NaN's.
+    A simple wrapper for the linear interpolation function from Numpy to fill in NaN's
+
     A copy of the data is made in place with endpoint NaN's extrapolated from closest non-NaN value
-    Modified slightly from sample code at ref: http://stackoverflow.com/questions/6518811/interpolate-nan-values-in-a-numpy-array
+    Modified slightly from sample code at ref:
+    http://stackoverflow.com/questions/6518811/interpolate-nan-values-in-a-numpy-array
 
     @param data: 1d numpy or pandas array with possible NaN's
     @return data after interpolation
@@ -150,7 +154,9 @@ def interpNaN(data):
 
 def medianFilter(data, window, interpolate=True):
     '''
-    A median filter.  If interpolate is True, data will be interpolated before smoothering.
+    A median filter
+
+    If interpolate is True, data will be interpolated before smoothering.
     Otherwise, all available data within the window will be used
     
     @param data: Input data

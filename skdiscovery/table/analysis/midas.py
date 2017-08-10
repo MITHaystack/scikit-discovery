@@ -47,8 +47,9 @@ class MIDAS(PipelineItem):
 
     def process(self, obj_data):
         '''
-        Apply the MIDAS estimator to generate velocity estimates and add the
-        result to the data wrapper
+        Apply the MIDAS estimator to generate velocity estimates
+
+        Adds the result to the data wrapper
 
         @param obj_data: Data wrapper
         '''

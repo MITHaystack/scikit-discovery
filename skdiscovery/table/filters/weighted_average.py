@@ -49,8 +49,9 @@ class WeightedAverage(PipelineItem):
         
     def process(self, obj_data):
         ''' 
-        Apply the moving (weighted) average filter to a table data wrapper, with
-        changes made in place.
+        Apply the moving (weighted) average filter to a table data wrapper.n
+        
+        Changes are made in place.
 
         @param obj_data: Input table data wrapper
         '''

@@ -349,6 +349,7 @@ class DiscoveryPipeline:
     def getMetadataNestedTypes(self):
         '''
         Get the Metadata Nested Types
+
         @return String: Metadata Nested types
         '''
         returnString=""

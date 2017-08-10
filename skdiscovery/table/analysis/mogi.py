@@ -80,7 +80,8 @@ class Mogi_Inversion(PipelineItem):
 
     def FitTimeSeries(self, pd_series, ct):
         '''
-        Fits the amplitude and offset of an inflation event given the time and length of the event.
+        Fits the amplitude and offset of an inflation event given the time and length of the event
+        
         Fits A and B in A * arctan( (t - t0) / c) + B
         
         @param pd_series: Time series to be fit

@@ -170,7 +170,11 @@ class StageContainerAlternative:
         return self.currentContainer.getObjects()
 
     def reset(self):
+        '''
+        Reset the current chosen StageContainer
+
         self.currentContainer.reset()
+        '''
 
     #++++++++ NEW Victor +++++++++++++++++
     def getMetadataType(self):

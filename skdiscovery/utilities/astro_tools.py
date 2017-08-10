@@ -62,6 +62,7 @@ def v_to_z(v):
 def angular_separation(ra1, dec1, ra2, dec2):
     '''
     Angular seperation between two objects via the haversine formula. 
+    
     All inputs are in degrees.
 
     Taken from http://www.movable-type.co.uk/scripts/gis-faq-5.1.html
@@ -124,8 +125,9 @@ def move_point(ra,dec,ang_dist,bearing):
 
 def abs_mag(app_mag, z):
     ''' 
-    Get the absolute magnitude from apparent magnitude. Assumes concordance cosmology.
-    No kcorrection is applied
+    Get the absolute magnitude from apparent magnitude
+    
+    Assumes concordance cosmology. No kcorrection is applied.
 
     @param app_mag: Apparent magnitude
     @param z: Redshift
@@ -140,8 +142,9 @@ def abs_mag(app_mag, z):
 
 def app_mag(abs_mag, z):
     ''' 
-    Get the apparent magnitude from absolute magnitude. Assumes concordance cosmology.
-    No kcorrection is assumed
+    Get the apparent magnitude from absolute magnitude.
+
+    Assumes concordance cosmology. No kcorrection is assumed.
 
     @param abs_mag: Absolute magnitude
     @param z: Redshift
@@ -156,7 +159,7 @@ def app_mag(abs_mag, z):
 
 def nfw(R, norm_constant, Rs, Rcore):
     '''
-    2D Navarro-Frenk-White surface radial profile  probability density
+    2D Navarro-Frenk-White surface radial profile probability density
 
     See:
     Navarro, J. F., Frenk, C. S., & White, S. D. M. 1996, ApJ, 462, 563
@@ -214,7 +217,7 @@ def lf(x, A, mstar, alpha):
 
 def dlf(x, A, m1, a1, m2, a2):
     ''' 
-    double Schechter function. Second LF is set to be 2*A of first LF
+    double Schechter function. Second LF is set to be 2*A of first LF.
 
     @param x: magnitude
     @param A: Scale factor
@@ -231,7 +234,7 @@ def dlf(x, A, m1, a1, m2, a2):
 
 def cdf_dlf(x, A, m1, a1, m2, a2, start=-26):
     ''' 
-    Cumulative  Schechter function. Second LF is set to be 2*A of first LF
+    Cumulative  Schechter function. Second LF is set to be 2*A of first LF.
 
     @param x: magnitude
     @param A: Scale factor
@@ -255,7 +258,7 @@ def cdf_dlf(x, A, m1, a1, m2, a2, start=-26):
 def inv_cdf_dlf(p, A, m1, a1, m2, a2, start=-26, end=-15):
 
     ''' 
-    Inverse Cumulative Schechter function. Second LF is set to be 2*A of first LF
+    Inverse Cumulative Schechter function. Second LF is set to be 2*A of first LF.
 
     @param p: probability
     @param A: Scale factor

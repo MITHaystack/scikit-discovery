@@ -51,8 +51,9 @@ class Correlate(PipelineItem):
     
     def process(self, obj_data):
         ''' 
-        Computes the correlation between all the time series and
-        stores the results in obj_data
+        Computes the correlation between all the time series
+
+        The results are stored in obj_data
 
         @param obj_data: Data wrapper for correlating
         '''

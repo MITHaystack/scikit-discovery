@@ -53,7 +53,9 @@ class Mogi_Inversion(PipelineItem):
         
     def FitPCA(self, hPCA_Proj):
         '''
-        Determine the timing of the inflation event from the first component of the pca projection
+        Determine the timing of the inflation event.
+
+        Uses the first component of the pca projection and
         fits A * arctan( (t - t0) / c ) + B to the first pca projection.
 
         @param hPCA_Proj: The sklearn PCA projection
@@ -74,6 +76,7 @@ class Mogi_Inversion(PipelineItem):
     def FitTimeSeries(self, pd_series, ct):
         '''
         Fits the amplitude and offset of an inflation event given the time and length of the event.
+
         Fits A and B in A * arctan( (t - t0) / c) + B
 
         @param pd_series: Time series to be fit
@@ -107,7 +110,7 @@ class Mogi_Inversion(PipelineItem):
         '''
         Finds the magma source (default-mogi) from PBO GPS data.
 
-        Assumes time series columns are named ('dN', 'dE', 'dU'). Predictes location of the
+        Assumes time series columns are named ('dN', 'dE', 'dU'). Predicts location of the
         magma source using scipy.optimize.curve_fit
 
         The location of the magma source is stored in the data wrapper as a list
