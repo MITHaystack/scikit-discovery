@@ -32,8 +32,9 @@ from sklearn.decomposition import FastICA
 
 class General_Component_Analysis(PipelineItem):
     ''' 
-    Performs a general component analysis on table data. Currently, the two
-    built-in types of analysis are either ICA or PCA.
+    Performs a general component analysis on table data.
+
+    Currently, the two built-in types of analysis are either ICA or PCA.
     '''
 
     def __init__(self, str_description, ap_paramList, n_components, column_names):

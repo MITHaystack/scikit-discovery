@@ -33,7 +33,8 @@ import numpy as np
 
 class HTanFilter(PipelineItem):
     '''
-    Filter to subtract arctan fit from data.
+    Filter to subtract arctan fit from data
+
     [DEPRECATED] [will be removed]
     '''
     def __init__(self, str_description, t0, amplitude=5, timescale=1., offset=0,
@@ -74,7 +75,7 @@ class HTanFilter(PipelineItem):
         ''' 
         Apply Arctangent filter to data param.
 
-        @set obj_data: Input data. Changes are made in place.
+        @param obj_data: Input data. Changes are made in place.
         '''
         
         parameters = [self.a, pbo_tools.datetimeToNumber(self.t0), self.c, self.offset, self.slope]

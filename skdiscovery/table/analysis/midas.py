@@ -30,16 +30,17 @@ from statsmodels.robust import mad
 
 class MIDAS(PipelineItem):
     '''
-    In Development: A python implementation of the Median Interannual Difference Adjusted for
-    Skewness (MIDAS) trend estimator from the Nevada Geodetic Laboratory. See
-    http://onlinelibrary.wiley.com/doi/10.1002/2015JB012552/full for reference.
+    In Development: A basic MIDAS trend estimator
+
+    See http://onlinelibrary.wiley.com/doi/10.1002/2015JB012552/full
     '''
         
     def __init__(self, str_description,column_names = None):
         '''
         Initiatlize the MIDAS filtering item
 
-        @param obj_data: Data wrapper
+        @param str_description: String description of filter
+        @param column_names: List of column names to analyze
         '''
         
         super(MIDAS, self).__init__(str_description, [])

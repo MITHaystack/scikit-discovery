@@ -35,8 +35,9 @@ import pandas as pd
 
 class CombineColumns(PipelineItem):
     '''
-    Create a new column by selecting data from a column, and fill in any missing values
-    using a second column
+    Create a new column by selecting data from a column
+
+    Fills in any missing values using a second column
     '''
     def __init__(self, str_description, column_1, column_2, new_column_name):
         '''

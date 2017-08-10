@@ -47,6 +47,8 @@ class Plotter(PipelineItem):
         @param columns_together: If true, plot the columns on the same graph
         @param annotate_column: Column of annotation data to use for annotation
         @param annotate_data: Annotation data
+        @param xlim: The x limit
+        @param ylim: The y limit
         @param **kwargs: Any additional keyword arguments are passed on to matplotlib
         '''
         self.xlim = xlim

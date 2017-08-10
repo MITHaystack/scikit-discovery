@@ -37,7 +37,7 @@ class KalmanFilter(PipelineItem):
     '''
 
     def __init__(self, str_description, ap_paramList, uncertainty_clip=5, column_names=None,
-                 error_column_names = None,pool_num=0, fillna=True):
+                 error_column_names = None, fillna=True):
         '''
         Initialize KalmanFilter
 

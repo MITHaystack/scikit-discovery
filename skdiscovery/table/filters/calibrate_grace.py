@@ -31,8 +31,9 @@ import pandas as pd
 
 class CalibrateGRACE(PipelineItem):
     '''
-    Calibrate Grace Data, applying the scale factor and averaging across the 
-    three solutions.
+    Calibrate Grace Data
+
+    Averages the three solutions and applies a scale factor
     '''
     
     def __init__(self, str_description, ewd_column_name='EWD', round_dates = True):

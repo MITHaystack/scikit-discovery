@@ -34,7 +34,7 @@ class DataRemover(PipelineItem):
         Initialize DataRemover
         
         @param str_description: String describing filter
-        @paam column_names: List of column names to select data to be removed (using None will apply to all columns)
+        @param column_names: List of column names to select data to be removed (using None will apply to all columns)
         @param start: Starting index value
         @param end: Ending index value (inclusive)
         @param labels: List of labels used to select data to be removed (using None will apply to all labels)

@@ -143,7 +143,7 @@ class StageContainerAlternative:
         ''' 
         Run the currently selected stage container.
 
-        @param obj_datacontainer: Data container to be passed to the current stagecontainer
+        @param obj_data_container: Data container to be passed to the current stagecontainer
         '''
         self.currentContainer.run(obj_data_container)
 

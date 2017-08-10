@@ -32,8 +32,9 @@ from statsmodels.robust import mad
 class Outlier(PipelineItem):
 
     ''' 
-    Computes (data / mad(data)) for outlier detection, adding it as a new
-    column to the given data object.
+    Computes (data / mad(data)) for outlier detection
+
+    Creates a new column for the result
     '''
 
     def __init__(self, str_description, columns=None, name_prefix = 'MAD_Scale_'):
@@ -42,7 +43,7 @@ class Outlier(PipelineItem):
 
         @param str_description: Name of Item
         @param columns: List of of column names
-        @param new_column_name: Name of newly created column
+        @param name_prefix: Prefix of newly created column
         '''
 
         self.columns = columns

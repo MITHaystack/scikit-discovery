@@ -41,7 +41,7 @@ class DataGenerator(DataFetcherBase):
         @param length: Number of rows to generate
         @param *args: Dictionaries containing entries: 'name',,'start', 'end', and optionally 'func'
         @param seed: Seed to use when generating random data
-        @final_function: Final function to call on random data
+        @param final_function: Final function to call on random data
         '''
 
         self.length = length

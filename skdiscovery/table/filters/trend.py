@@ -41,7 +41,8 @@ class TrendFilter(PipelineItem):
         Initialize Trend Filter
 
         @param str_description: String describing filter
-        @ap_paramList[list_trendTypes]: List of trend types. List can contain "linear", "annual", or "semiannual"
+        @param ap_paramList[list_trendTypes]: List of trend types. List can contain "linear", "annual", or "semiannual"
+        @param columns: List of column names to filter
         '''
         super(TrendFilter, self).__init__(str_description, ap_paramList)
         self.columns = columns

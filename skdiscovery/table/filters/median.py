@@ -42,6 +42,8 @@ class MedianFilter(PipelineItem):
         @param ap_paramList[ap_window]: median filter window width
         @param interpolate: Interpolate data points before filtering
         @param subtract: Subtract filtered result from original
+        @param regular_period: Assume the data is regularly sampled
+        @param min_periods: Minimum required number of data points in window
         '''
 
         self.interpolate = interpolate

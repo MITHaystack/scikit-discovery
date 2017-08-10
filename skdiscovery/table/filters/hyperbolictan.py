@@ -75,7 +75,7 @@ class HTanFilter(PipelineItem):
         ''' 
         Apply Arctangent filter to data param.
 
-        @set obj_data: Input data. Changes are made in place.
+        @param obj_data: Input data. Changes are made in place.
         '''
         
         parameters = [self.a, pbo_tools.datetimeToNumber(self.t0), self.c, self.offset, self.slope]

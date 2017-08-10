@@ -30,8 +30,7 @@ from skdaccess.utilities.map_util import wgs84_distance
 
 class GeoLocationFilter(PipelineItem):
     '''
-    This filter removes objects that do not fall within 
-    some specified distance of a position on Earth
+    Removes objects not located in a specified region
     '''
     
     def __init__(self, str_description, ap_paramList):
@@ -42,7 +41,7 @@ class GeoLocationFilter(PipelineItem):
         @param ap_paramList[ap_lat]: Latitude coordinate
         @param ap_paramList[ap_lon]: Longitude coordinate
         @param ap_paramList[ap_radius]: cut objects whose distance from lat/lon 
-        is greater than ap_radius
+                                        is greater than ap_radius
         '''
         super(GeoLocationFilter, self).__init__(str_description, ap_paramList)
         
