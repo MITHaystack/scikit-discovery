@@ -7,6 +7,10 @@
 - Use automatically perturbed data processing pipeline to create different data products.
 - Easy to use with [scikit-dataaccess](https://github.com/MITHaystack/scikit-dataaccess) for integration of a variety of scientific data sets
 
+<p align="center">
+  <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/skdiscovery_overviewdiag.png" width="810"/>
+</p>
+
 ### Install
 ```
 pip install scikit-discovery
