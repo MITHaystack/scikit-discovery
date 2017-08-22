@@ -27,4 +27,6 @@ We acknowledge support from NASA AISTNNX15AG84G, NSF ACI1442997, and NSF AGS-134
 
 ## Examples
 
-Code available at [/skdaccess/examples](https://github.com/MITHaystack/scikit-dataaccess/tree/master/skdaccess/examples)
+Example code with complete science case studies are available as Jupyter Notebooks at: 
+
+[/MITHaystack/science-casestudies](https://github.com/MITHaystack/science-casestudies)
