@@ -1,5 +1,5 @@
 <p align="left">
-  <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/skdiscovery_logo360x100.png"/>
+  <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_logo360x100.png"/>
 </p>
 
 - Design & configure data processing pipelines
@@ -8,7 +8,7 @@
 - Easy to use with [scikit-dataaccess](https://github.com/MITHaystack/scikit-dataaccess) for integration of a variety of scientific data sets
 
 <p align="center">
-  <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/skdiscovery_overviewdiag.png"/>
+  <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_overviewdiag.png"/>
 </p>
 
 ### Install
