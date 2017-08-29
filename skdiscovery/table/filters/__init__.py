@@ -16,6 +16,7 @@ from .geolocation import GeoLocationFilter
 from .combine_columns import CombineColumns
 from .calibrate_grace import CalibrateGRACE
 from .resample import Resample
+from .normalize import NormalizeFilter
 
 __all__ = ['DataRemover', 'HTanFilter', 'InterpolateFilter',
            'KalmanFilter', 'LowPassFilter', 'MedianFilter',
