@@ -2,7 +2,7 @@
   <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_logo360x100.png"/>
 </p>
 
-- Explore scientific data with a set of tools, including
+- Explore scientific data with a set of tools for human-guided or automated discovery
 - Design & configure data processing pipelines
 - Define the parameter ranges for your algorithms, available algorithmic choices, and the framework will generate pipeline instances for you 
 - Use automatically perturbed data processing pipelines to create different data products.
