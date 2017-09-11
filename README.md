@@ -2,10 +2,12 @@
   <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_logo360x100.png"/>
 </p>
 
+- Explore scientific data with a set of tools, including
 - Design & configure data processing pipelines
 - Define the parameter ranges for your algorithms, available algorithmic choices, and the framework will generate pipeline instances for you 
-- Use automatically perturbed data processing pipeline to create different data products.
+- Use automatically perturbed data processing pipelines to create different data products.
 - Easy to use with [scikit-dataaccess](https://github.com/MITHaystack/scikit-dataaccess) for integration of a variety of scientific data sets
+
 
 <p align="center">
   <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_overviewdiag.png"/>
@@ -27,7 +29,7 @@ Project developers: Cody M. Rude, Justin D. Li, David M. Blair, Michael G. Gowan
 
 ### Acknowledgements
 
-We acknowledge support from NASA AISTNNX15AG84G, NSF ACI1442997, and NSF AGS-1343967.
+We acknowledge support from NASA AISTNNX15AG84G, NSF ACI1442997, NSF AGS-1343967, and Amazon AWS.
 
 ## Examples
 
