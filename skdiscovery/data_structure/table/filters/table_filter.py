@@ -1,0 +1,56 @@
+# The MIT License (MIT)
+# Copyright (c) 2017 Massachusetts Institute of Technology
+#
+# Authors: Victor Pankratius, Justin Li, Cody Rude
+# This software is part of the NSF DIBBS Project "An Infrastructure for
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Deformation Phenomena" (PI: V. Pankratius)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from skdiscovery.data_structure.framework.base import PipelineItem
+
+class TableFilter(PipelineItem):
+    ''' This class removes tables based on their label '''
+
+    def __init__(self, str_description, ap_paramList):
+        '''
+        Initialize Table FIlter
+
+        @param str_description: String describing this filter
+        @param ap_paramList[ap_label_list]: AutoList of table labels to remove
+
+        '''
+        super(TableFilter, self).__init__(str_description, ap_paramList)
+
+    def process(self, obj_data): 
+        ''' 
+        Apply geolocation filter to data set
+        
+        @param obj_data: Table data wrapper
+        '''
+       
+        label_list = self.ap_paramList[0]()
+        remove_list = []
+        
+        for label, data in obj_data.getIterator():
+            if label in label_list:
+                remove_list.append(label)
+                
+        obj_data.removeFrames(remove_list) 

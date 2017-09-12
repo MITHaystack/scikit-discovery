@@ -26,7 +26,7 @@
 
 
 import skdaccess.utilities.pbo_util as pbo_tools
-import skdiscovery.series.analysis.mogi as mogi
+import skdiscovery.data_structure.series.analysis.mogi as mogi
 
 from mpl_toolkits.basemap import Basemap
 import numpy as np

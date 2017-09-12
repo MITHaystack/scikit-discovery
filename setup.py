@@ -6,7 +6,7 @@ package_name = 'scikit-discovery'
 package_list = find_packages()
 
 setup(name     = package_name,
-      version  = '0.9.5',
+      version  = '0.9.7',
       packages = package_list,
       zip_safe = False,
       
@@ -40,7 +40,11 @@ setup(name     = package_name,
           'Topic :: Scientific/Engineering',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: MIT License',
+          'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
           'Programming Language :: Python :: 3 :: Only'
           ],
-      python_requires='>=3.4'
+      python_requires='>=3.4',
+      url = 'https://github.com/MITHaystack/scikit-discovery',
+      package_data={'skdiscovery': ['license/LICENSE','license/LGPL_LICENSE','license/MIT_LICENSE']},
+
 )

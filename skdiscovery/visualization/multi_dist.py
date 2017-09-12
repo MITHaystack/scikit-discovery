@@ -25,15 +25,15 @@
 # THE SOFTWARE.
 
 
-from skdaccess.utilities import pbo_util
-from skdiscovery.utilities import pbo_tools
-from skdiscovery.series.analysis.mogi import MogiVectors
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns
-import matplotlib.pyplot as plt
+from skdaccess.utilities import pbo_util
+from skdiscovery.data_structure.series.analysis.mogi import MogiVectors
+
+from skdiscovery.utilities.patterns import pbo_tools
 
 sns.set(font='serif')
 
