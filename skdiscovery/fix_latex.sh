@@ -6,7 +6,7 @@ gsed -ri 's/\\\+base\.//g' *.tex
 gsed -ri 's/\\\+correlate\.//g' *.tex
 gsed -ri 's/\\\+data\.//g' *.tex
 gsed -ri 's/\\\+dataremover\.//g' *.tex
-gsed -ri 's/\\\+framework\.\\\+discoverypipeline\.//g' *.tex
+gsed -ri 's/\\\+discoverypipeline\.//g' *.tex
 gsed -ri 's/\\\+gca\.//g' *.tex
 gsed -ri 's/\\\+gpshplotter\.//g' *.tex
 gsed -ri 's/\\\+calibrate\\\+\\_\\\+grace\.//g' *.tex
@@ -40,3 +40,5 @@ gsed -ri 's/\\\+skew\.//g' *.tex
 gsed -ri 's/\\\+stabilization\.//g' *.tex
 gsed -ri 's/\\\+table\\\+\\_\\\+filter\.//g' *.tex
 gsed -ri 's/\\\+weighted\\\+\\_\\\+average\.//g' *.tex
+gsed -ri 's/\\\+normalize\.//g' *.tex
+gsed -ri 's/\\\+resample\.//g' *.tex
