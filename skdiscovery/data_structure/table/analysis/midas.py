@@ -30,7 +30,7 @@ from statsmodels.robust import mad
 
 class MIDAS(PipelineItem):
     '''
-    In Development: A basic MIDAS trend estimator
+    *In Development* A basic MIDAS trend estimator
 
     See http://onlinelibrary.wiley.com/doi/10.1002/2015JB012552/full
     '''
