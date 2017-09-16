@@ -36,7 +36,7 @@ from skdiscovery.utilities.patterns.astro_tools import nfw, move_point
 
 class CatalogGenerator(DataFetcherBase):
     '''
-    In Development: Generates galaxy catalogs for use in DiscoveryPipeline
+    *In Development* Generates galaxy catalogs for use in DiscoveryPipeline
     '''
 
     def __init__(self, ap_paramList, ra1,dec1, ra2, dec2, background_density, z):
