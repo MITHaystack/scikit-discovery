@@ -65,9 +65,9 @@ def angular_separation(ra1, dec1, ra2, dec2):
     
     All inputs are in degrees.
 
-    Taken from http://www.movable-type.co.uk/scripts/gis-faq-5.1.html
+    Formula obtained from http://www.movable-type.co.uk/scripts/gis-faq-5.1.html
 
-    Formula is presented in
+    Formula originally presented in
     R.W. Sinnott, "Virtues of the Haversine", Sky and Telescope, vol. 68, no. 2, 1984, p. 159
 
     @param ra1: Right Ascention of first object (degrees)
