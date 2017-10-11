@@ -132,24 +132,19 @@ def sinuFits(xdata,fitN=2,rmve=1):
     
 def interpNaN(data):
     '''
-    A simple wrapper for the linear interpolation function from Numpy to fill in NaN's
+    Interpolate data using a linear interpolation
 
-    A copy of the data is made in place with endpoint NaN's extrapolated from closest non-NaN value
-    Modified slightly from sample code at ref:
-    http://stackoverflow.com/questions/6518811/interpolate-nan-values-in-a-numpy-array
-
-    @param data: 1d numpy or pandas array with possible NaN's
+    @param data: 1d numpy or pandas Series with possible NaN's
     @return data after interpolation
     '''
 
-    # Make copy of data
-    data = data.copy()
-    # finds indicies of NaN's in the data
-    nans,x = pd.isnull(data), lambda z: z.nonzero()[0]
-    # interpolates results
-    data[nans] = np.interp(x(nans), x(~nans), data[~nans])
+    if isinstance(data, np.ndarray):
+        data = pd.Series(data)
+        return data.interpolate().as_matrix()
 
-    return data
+    elif isinstance(data, pd.Series):
+        return data.interpolate()
+
 
 
 def medianFilter(data, window, interpolate=True):
