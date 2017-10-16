@@ -29,7 +29,7 @@ Project developers: Cody M. Rude, Justin D. Li, David M. Blair, Michael G. Gowan
 
 ### Acknowledgements
 
-We acknowledge support from NASA AISTNNX15AG84G, NSF ACI1442997, NSF AGS-1343967, and Amazon AWS.
+We acknowledge support from NASA AIST14-NNX15AG84G, NASA AIST16-80NSSC17K0125, NSF ACI-1442997, NSF AGS-1343967, and Amazon AWS.
 
 ## Examples
 
