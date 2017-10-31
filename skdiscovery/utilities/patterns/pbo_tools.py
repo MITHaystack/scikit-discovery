@@ -3,8 +3,8 @@
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for
-# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
-# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface
 # Deformation Phenomena" (PI: V. Pankratius)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -13,7 +13,7 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -35,20 +35,20 @@ import pandas as pd
 
 import skdiscovery.utilities.planetary.map_util as mo
 
-
-def mogi(xdata, lat, lon, source_depth, amplitude):
+def mogi(xdata, y, x, source_depth, amplitude, latlon=True):
     '''
     Compute the surface deformation due to changes in a mogi source
 
     @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param y: Source y Position of (default: latitude)
+    @param x: Source x Position (default longitude)
     @param source_depth: Depth of source
     @param amplitude: Amplitude of mogi source
+    @param latlon: Source y is latitude and source x is longitude
 
     @return list of resulting deformation for each point in xdata
     '''
-    source_coords = (lat, lon)
+    source_coords = (y, x)
 
     results = []
 
@@ -58,12 +58,14 @@ def mogi(xdata, lat, lon, source_depth, amplitude):
         station_coords = (float(data[1]),float(data[2]))
         # print(station_coords)
 
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
-
+        if latlon==True:
+            y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
+            x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
+            x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
+            y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
+        else:
+            y_distance = station_coords[0] - source_coords[0]
+            x_distance = station_coords[1] - source_coords[1]
 
         R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
 
@@ -81,7 +83,8 @@ def mogi(xdata, lat, lon, source_depth, amplitude):
         results.append(result)
     return results
 
-    
+
+
 def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
     '''
     Compute the surface deformation due to changes in a finite sphere source
@@ -130,7 +133,7 @@ def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
 
         results.append(result)
     return results
-    
+
 
 def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     '''
@@ -181,8 +184,8 @@ def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
 
         results.append(result)
     return results
-    
-    
+
+
 def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     '''
     Compute the surface deformation due to changes in a constant width open pipe source
@@ -197,7 +200,7 @@ def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     @param amplitude: Ampltiude of source
     @param pipe_delta: Pipe delta from source depth to top/bottom
 
-    @return list of resulting deformation for each point in xdata    
+    @return list of resulting deformation for each point in xdata
     '''
     nu_v = .25
     source_coords = (lat, lon)
@@ -232,8 +235,8 @@ def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
 
         results.append(result)
     return results
-    
-       
+
+
 def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_pipe_top):
     '''
     Compute the surface deformation due to changes in a rising width amplitude open pipe source
@@ -284,8 +287,8 @@ def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_p
 
         results.append(result)
     return results
-    
-    
+
+
 def sill(xdata, lat, lon, source_depth, amplitude):
     '''
     Compute the surface deformation due to changes in a sill-like source
@@ -328,8 +331,8 @@ def sill(xdata, lat, lon, source_depth, amplitude):
 
         results.append(result)
     return results
-    
-    
+
+
 def dirEigenvectors(coord_list, pca_comps,pdir='H'):
     '''
     Takes eigenvectors (north and east) and forces them to point "outward"
@@ -351,30 +354,30 @@ def dirEigenvectors(coord_list, pca_comps,pdir='H'):
     station_lon_list = []
     ev_lat_list = []
     ev_lon_list = []
-    if pdir=='H':        
+    if pdir=='H':
         for i in range(int(len(pca_comps)/2)):
             station_lat_list.append(coord_list[i][0])
             station_lon_list.append(coord_list[i][1])
             ev_lat_list.append(pca_comps[2*i])
             ev_lon_list.append(pca_comps[2*i+1])
 
-    elif pdir=='V':        
+    elif pdir=='V':
         for i in range(int(len(pca_comps))):
             station_lat_list.append(coord_list[i][0])
             station_lon_list.append(coord_list[i][1])
             ev_lat_list.append(pca_comps[i])
-            ev_lon_list.append(0)            
-            
+            ev_lon_list.append(0)
+
     station_lat_list = np.array(station_lat_list)
     station_lon_list = np.array(station_lon_list)
     ev_lat_list = np.array(ev_lat_list)
     ev_lon_list = np.array(ev_lon_list)
-    
+
     if pdir=='H':
         # mean coordinate
         mean_lon = np.mean(station_lon_list)
         mean_lat = np.mean(station_lat_list)
-        
+
         # project the eigen vector along the direction relative to mean
         mean_angle = np.arctan2(station_lat_list-mean_lat,station_lon_list-mean_lon)
         eigv_angle = np.arctan2(ev_lat_list,ev_lon_list)
@@ -386,14 +389,14 @@ def dirEigenvectors(coord_list, pca_comps,pdir='H'):
             return station_lat_list, station_lon_list, ev_lat_list, ev_lon_list, 1
     else:
         return station_lat_list, station_lon_list, ev_lat_list, ev_lon_list, 1
-                  
+
 
 def datetimeToNumber(in_time):
-    ''' 
-    Converts input pandas Timestamp or pandas DatetimeIndex to unix time 
+    '''
+    Converts input pandas Timestamp or pandas DatetimeIndex to unix time
 
     @param in_time: Input pandas timestamp or pandas DatetimeIndex
-    
+
     @return unix time
     '''
     if isinstance (in_time, pd.Timestamp):
