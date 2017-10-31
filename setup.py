@@ -6,7 +6,7 @@ package_name = 'scikit-discovery'
 package_list = find_packages()
 
 setup(name     = package_name,
-      version  = '0.9.7',
+      version  = '0.9.8',
       packages = package_list,
       zip_safe = False,
       
@@ -30,8 +30,7 @@ setup(name     = package_name,
                           'psutil >= 5.2',
                           'seaborn >= 0.8',
                           'six >= 1.10.0',
-                          'scikit_learn >= 0.17',
-                          'traitlets >= 4.3.2',],
+                          'scikit_learn >= 0.17'],
       
       description = 'A package for Computer-Aided Discovery',
       author = 'MITHAGI',
