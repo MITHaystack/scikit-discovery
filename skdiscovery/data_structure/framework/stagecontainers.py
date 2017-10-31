@@ -221,9 +221,6 @@ class StageContainerAlternative:
 class StageContainerIncrementalAdd:
     ''' In each perturb call, it incrementally adds one of the filters specified in the constructor. '''
     
-    length = 0    
-    currentindex = 0
-    list_currentContainers      = []
 
     def __init__(self, list_stagecontainers):
         '''
@@ -233,6 +230,10 @@ class StageContainerIncrementalAdd:
         '''
         self.length = len(list_stagecontainers)
         self.list_AllStagecontainers = list_stagecontainers
+
+        self.currentindex = 0
+        self.list_currentContainers      = []
+
         self.perturb()
         
     def reset(self):

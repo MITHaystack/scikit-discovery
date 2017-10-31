@@ -291,8 +291,21 @@ class DiscoveryPipeline:
         g1.node_attr['height'] = '0.1'
         g1.node_attr['fillcolor'] = '#d8e9fd'
         #g1.node_attr['shape'] = 'plaintext'  #use this to remove boxes around nodes
+
+        # Some stagecontainers directly return the metadata as string,
+        # others return a list of strings for each item in the stage
+        # container.
+        metadata_list = []
+        for s in self.stage_containers:
+            first_metadata = s.getMetadata()
+            if isinstance(first_metadata, str):
+                metadata_list.append(first_metadata)
+
+            else:
+                for second_metadata in first_metadata:
+                    metadata_list.append(second_metadata)
         
-        nodelist = [re.sub('\:',';',s.getMetadata()) for s in self.stage_containers]
+        nodelist = [re.sub('\:',';', metadata) for metadata in metadata_list]
 
         for s in nodelist:
             g1.node(s)
