@@ -25,7 +25,7 @@ See <https://github.com/MITHaystack/scikit-discovery/tree/master/skdiscovery/doc
 ### Contributors
 
 Project lead: [Victor Pankratius (MIT)](http://www.victorpankratius.com)<br>
-Contributors: Cody M. Rude, Justin D. Li, David M. Blair, Michael G. Gowanlock, Victor Pankratius
+Contributors: Cody M. Rude, Justin D. Li, David M. Blair, Michael G. Gowanlock, Evan Wojciechowski, Victor Pankratius
 
 ### Acknowledgements
 
