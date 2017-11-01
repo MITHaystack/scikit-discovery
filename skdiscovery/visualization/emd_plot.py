@@ -77,7 +77,7 @@ def calc_imfs_sum(imfs, highNum = 2, high = True, residual = False):
 
     return summed
 
-def plot_imfs(rawData, imfs, toPlot = [], mainTitle = 'IMFs', show = True):
+def plot_imfs(rawData, imfs, toPlot = [], mainTitle = 'IMFs', show = True, figsize=(12,10)):
     '''
     Plots raw data and IMFs in a subplot grid (n Imfs [rows] x 1 [col])
     
@@ -85,6 +85,7 @@ def plot_imfs(rawData, imfs, toPlot = [], mainTitle = 'IMFs', show = True):
     @param imfs: Input array of IMFs for plotting
     @param toPlot: List of which IMFs to plot (default is all)
     @param show: Boolean to show plot immediately after plot creation
+    @param figsize: Size of figure
     '''
 
     try:
@@ -103,7 +104,7 @@ def plot_imfs(rawData, imfs, toPlot = [], mainTitle = 'IMFs', show = True):
     else:
         toPlot = [i - 1 for i in toPlot]
 
-    fig, axes = plt.subplots(len(toPlot) + 1, 1, sharex = True, figsize = (12, 6.75))
+    fig, axes = plt.subplots(len(toPlot) + 1, 1, sharex = True, figsize = figsize)
 
     naxis = fig.add_subplot(111, frameon = False)
     plt.tick_params(labelcolor = 'none', top = 'off', bottom = 'off', left = 'off', right = 'off')
@@ -391,7 +392,7 @@ def plot_imfs_noise(imfs, guessType = 'high', noiseNum = 2, collage = False, sho
 
 #%# wrappers #%#
 
-def run_plotImfs(inData, imfs = None, nbsym = False, toPlot = [], mainTitle = 'IMFs', show = True):
+def run_plotImfs(inData, imfs = None, nbsym = False, toPlot = [], mainTitle = 'IMFs', show = True, figsize=(12,10)):
     '''
     Wrapper for plot_imfs
 
@@ -405,7 +406,7 @@ def run_plotImfs(inData, imfs = None, nbsym = False, toPlot = [], mainTitle = 'I
     if imfs is None:
         imfs = calc_imfs(inData[real], nbsym = nbsym)
 
-    plot_imfs(inData[real], imfs, toPlot = toPlot, mainTitle = mainTitle, show = show)
+    plot_imfs(inData[real], imfs, toPlot = toPlot, mainTitle = mainTitle, show = show, figsize = figsize)
     return imfs
 
 def run_plotImfsSplit(inData, imfs = None, nbsym = False, highNum = 2, residual = False, mainTitle = 'Raw data', collage = False, show = True):
