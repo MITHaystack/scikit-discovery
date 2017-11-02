@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 
 from skdiscovery.data_structure.framework.base import PipelineItem
-from skdaccess.utilities.grace_util import compute_ewd
+from skdaccess.utilities.grace_util import computeEWD
 import pandas as pd
 
 
@@ -57,7 +57,7 @@ class CalibrateGRACE(PipelineItem):
         label_list = []
         frame_list = []
         for label, data in obj_data.getIterator():
-            frame_list.append(pd.DataFrame(compute_ewd(data, obj_data.info(label)['scale_factor'],
+            frame_list.append(pd.DataFrame(computeEWD(data, obj_data.info(label)['scale_factor'],
                                           round_nearest_day=self.round_dates), columns=[self.ewd_column_name]))
 
             frame_list[-1].loc[:,self.ewd_column_name + '_Error'] = obj_data.info(label)['measurement_error']
