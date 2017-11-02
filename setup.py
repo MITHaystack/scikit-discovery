@@ -24,7 +24,7 @@ setup(name     = package_name,
           'paramiko >= 2.1.0',
           'psutil >= 5.2',
           'psutil>=5',
-          'pyhht'
+          'pyhht',
           'PyWavelets',
           'scikit-dataaccess>=1.9.0',
           'scikit-learn >= 0.17',
