@@ -408,12 +408,8 @@ def wgs84_distance(point1, point2, planet=Planet("wgs84"), miles=False):
     lat2 = point2[0]
     lon2 = point2[1]
 
-    if np.isscalar(lat1) and np.isscalar(lon1) and np.isscalar(lat2) and np.isscalar(lon2) :
-        return calc_distance(lat1, lon1, lat2, lon2)
-    else:
-        return np.fromiter(map(lambda x: calc_distance(*x), zip(lat1, lon1, lat2, lon2)),
-                           dtype=np.float,count=np.max([len(lat1), len(lon1), len(lat2), len(lon2)]))
-
+    v_calc_distance = np.vectorize(calc_distance)
+    return v_calc_distance(lat1, lon1, lat2, lon2)
     
         
 # This function converts pixel x,y coordinates into global coordinates
