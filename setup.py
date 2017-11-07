@@ -6,7 +6,7 @@ package_name = 'scikit-discovery'
 package_list = find_packages()
 
 setup(name     = package_name,
-      version  = '0.9.9',
+      version  = '0.9.9post1',
       packages = package_list,
       zip_safe = False,
 
