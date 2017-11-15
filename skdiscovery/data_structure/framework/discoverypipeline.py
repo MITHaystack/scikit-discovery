@@ -30,6 +30,7 @@ import re
 from contextlib import ExitStack
 from multiprocessing import Pool
 from multiprocessing import cpu_count
+from multiprocessing import Manager
 
 import graphviz as gv
 from IPython.display import SVG
@@ -40,7 +41,7 @@ from tqdm import tqdm
 from . import config
 
 
-def _cluster_run(data_fetcher, stage_containers, run_id=-1, verbose = False):
+def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, verbose = False):
     ''' 
     Run the pipeline
 
@@ -51,7 +52,12 @@ def _cluster_run(data_fetcher, stage_containers, run_id=-1, verbose = False):
 
     @return results from pipeline run
     '''
-    data_container = data_fetcher.output()
+    if data_fetcher.multirun_enabled() == False and shared_lock != None:
+        with shared_lock:
+            data_container = data_fetcher.output()
+    else:
+        data_container = data_fetcher.output()
+
     data_container.run_id = run_id
 
     if verbose == False:
@@ -65,7 +71,8 @@ def _cluster_run(data_fetcher, stage_containers, run_id=-1, verbose = False):
     return data_container.getResults()
 
 def _wrap_cluster(args):
-    ''' Wrap cluster run 
+    '''
+    Wrap cluster run
 
     @param args: Arguments to pass to _cluster_run
 
@@ -106,10 +113,6 @@ class DiscoveryPipeline:
         @param verbose: Display the pipeline for each run
         '''
 
-
-        # Check to make sure data fetcher supports amazon or multicore if requested
-        if (amazon == True or num_cores != 1) and self.data_fetcher.multirun_enabled() == False:
-            raise RuntimeError('Data Fetcher type does not support amazon or using multiple cores')
 
         # Run the job on Amazon
         if amazon == True:
@@ -157,12 +160,15 @@ class DiscoveryPipeline:
         # Run the job on the local machine
         else:
 
+            shared_manager = Manager()
+            shared_lock = shared_manager.Lock()
+
             # Function to generate inputs for running
             def generatePipelineInputs():
                 self.stageConfigurationHistory.append(self.getMetadata())
                 if verbose:
                     self.plotPipelineInstance()
-                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), 0
+                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
 
                 for i in range(1, num_runs):
                     if perturb_data == False:
@@ -173,9 +179,9 @@ class DiscoveryPipeline:
                     self.stageConfigurationHistory.append(self.getMetadata()) 
                     if verbose:
                         self.plotPipelineInstance()
-                    yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), i
+                    yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, i
 
-                # Perturb data as many times as runing more than once
+                # If running multiple times, perturb the pipeline or the data
                 if num_runs > 1:
                     if perturb_data == False:
                         self.perturb()
@@ -397,7 +403,11 @@ class DiscoveryPipeline:
         
         # Amazon run function
         def amazon_run(data_fetcher, stage_containers, run_id=-1):
-            data_container = data_fetcher.output()
+            global shared_lock
+            if data_fetcher.multirun_enabled() == False:
+                with shared_lock:
+                    data_container = data_fetcher.output()
+
             data_container.run_id = run_id
             for s in stage_containers:
                 s.run(data_container)
