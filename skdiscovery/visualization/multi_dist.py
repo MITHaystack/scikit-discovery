@@ -29,13 +29,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
-import seaborn as sns
+
 from skdaccess.utilities import pbo_util
 from skdiscovery.data_structure.series.analysis.mogi import MogiVectors
 
 from skdiscovery.utilities.patterns import pbo_tools
-
-sns.set(font='serif')
 
 
 def calc_distance_map(pipeline, ap_name, ca_name, ca_type ,plotFlag = True, histIdx = False, fontsize=10):
@@ -128,10 +126,17 @@ def calc_distance_map(pipeline, ap_name, ca_name, ca_type ,plotFlag = True, hist
         dist_mat = pd.DataFrame(dist_mat, index=history, columns=history)
     
     if plotFlag:
+        # Importing seaborn here in order to
+        # return matplotlib to it's original style
+        import seaborn as sns
+        sns.set(font='serif')
+
         cg = sns.clustermap(dist_mat)
         plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0, fontsize=fontsize);
         plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90, fontsize=fontsize);
         cg.cax.set_title(ctitle,fontsize=fontsize);
+        sns.reset_orig()
+
         if histIdx:
             return cg, history
         else:
