@@ -17,6 +17,7 @@ from .combine_columns import CombineColumns
 from .calibrate_grace import CalibrateGRACE
 from .resample import Resample
 from .normalize import NormalizeFilter
+from .calibrate_mascon import CalibrateGRACEMascon
 
 __all__ = ['DataRemover', 'HTanFilter', 'InterpolateFilter',
            'KalmanFilter', 'LowPassFilter', 'MedianFilter',

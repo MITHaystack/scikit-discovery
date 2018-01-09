@@ -28,7 +28,7 @@
 from skdiscovery.data_structure.framework.base import PipelineItem
 from skdiscovery.data_structure.framework import DiscoveryPipeline
 from skdiscovery.data_structure.generic.accumulators import DataAccumulator
-from skdiscovery.data_structure.table.filters import CalibrateGRACE, Resample, RoundDates
+from skdiscovery.data_structure.table.filters import CalibrateGRACE, Resample, CalibrateGRACEMascon
 from skdiscovery.data_structure.framework.stagecontainers import *
 from skdaccess.framework.param_class import *
 from skdaccess.geo.grace import DataFetcher as GDF
@@ -164,17 +164,18 @@ class GraceFusion(PipelineItem):
             fl_grace = CalibrateGRACE('Calibrate')
             sc_grace = StageContainer(fl_grace)
 
+            fl_mascon = CalibrateGRACEMascon('CalibrateMascon')
+            sc_mascon = StageContainer(fl_mascon)
+
             fl_resample = Resample('Resample',start_date, end_date)
             sc_resample = StageContainer(fl_resample)
-            
+
 
             if pipe_type == 'grace':
                 pipeline = DiscoveryPipeline(datafetcher, [sc_grace, sc_resample, sc_data])
 
             elif pipe_type == 'mascon':
-                fl_round = RoundDates('RoundDates')
-                sc_round = StageContainer(fl_round)
-                pipeline = DiscoveryPipeline(datafetcher, [sc_round, sc_resample, sc_data])
+                pipeline = DiscoveryPipeline(datafetcher, [sc_mascon, sc_resample, sc_data])
 
             elif pipe_type == 'gldas':
                 pipeline = DiscoveryPipeline(datafetcher, [sc_resample, sc_data])
