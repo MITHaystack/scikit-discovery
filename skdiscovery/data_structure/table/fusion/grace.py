@@ -28,10 +28,11 @@
 from skdiscovery.data_structure.framework.base import PipelineItem
 from skdiscovery.data_structure.framework import DiscoveryPipeline
 from skdiscovery.data_structure.generic.accumulators import DataAccumulator
-from skdiscovery.data_structure.table.filters import CalibrateGRACE, Resample
+from skdiscovery.data_structure.table.filters import CalibrateGRACE, Resample, RoundDates
 from skdiscovery.data_structure.framework.stagecontainers import *
 from skdaccess.framework.param_class import *
 from skdaccess.geo.grace import DataFetcher as GDF
+from skdaccess.geo.grace.mascon.cache import DataFetcher as MasconDF
 from skdaccess.geo.gldas import DataFetcher as GLDASDF
 
 import numpy as np
@@ -44,7 +45,8 @@ class GraceFusion(PipelineItem):
     Works on table data (original data from http://grace.jpl.nasa.gov/data/get-data/monthly-mass-grids-land/) 
     '''
 
-    def __init__(self, str_description, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty', gldas = "Off"):
+    def __init__(self, str_description, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty', gldas = "Off",
+                 use_mascons=False):
         '''
         Initialize Grace Fusion item
 
@@ -53,13 +55,16 @@ class GraceFusion(PipelineItem):
         @param column_data_name: Name of column for GRACE data
         @param column_error_name: Grace Uncertainty column name
         @param gldas: Indicating use of the global land data assimilation water model
+        @param use_mascons: Use mascon solution instead of spherical harmonics
         '''
+
         super(GraceFusion, self).__init__(str_description, [])
         self.metadata = metadata.copy()
         self.column_data_name = column_data_name
         self.column_error_name = column_error_name
         # remove_sm_and_snow
         self.gldas = gldas
+        self.use_mascons = use_mascons
         self._tileCache = None
 
         
@@ -135,7 +140,13 @@ class GraceFusion(PipelineItem):
         al_locations = AutoListCycle(fetcher_unilocs)
         al_locations_gldas = AutoListCycle(fetcher_unilocs)
 
-        graceDF = GDF([al_locations],start_date, end_date)
+        if self.use_mascons == False:
+            graceDF = GDF([al_locations], start_date, end_date)
+
+        else:
+            graceDF = MasconDF([al_locations], start_date, end_date)
+
+
         gldasDF = GLDASDF([al_locations_gldas], start_date, end_date)
 
         
@@ -145,7 +156,7 @@ class GraceFusion(PipelineItem):
         
         # grace_pipe = DiscoveryPipeline(graceDF, [sc_interp,sc_data])
 
-        def getData(datafetcher,length):
+        def getData(datafetcher,length, pipe_type):
 
             ac_data = DataAccumulator('Data',[])
             sc_data = StageContainer(ac_data)
@@ -157,27 +168,43 @@ class GraceFusion(PipelineItem):
             sc_resample = StageContainer(fl_resample)
             
 
-            pipeline = DiscoveryPipeline(datafetcher, [sc_grace, sc_resample, sc_data])
+            if pipe_type == 'grace':
+                pipeline = DiscoveryPipeline(datafetcher, [sc_grace, sc_resample, sc_data])
+
+            elif pipe_type == 'mascon':
+                fl_round = RoundDates('RoundDates')
+                sc_round = StageContainer(fl_round)
+                pipeline = DiscoveryPipeline(datafetcher, [sc_round, sc_resample, sc_data])
+
+            elif pipe_type == 'gldas':
+                pipeline = DiscoveryPipeline(datafetcher, [sc_resample, sc_data])
+
+            else:
+                raise RuntimeError('pipe_type: ' + str(pipe_type) + ' not understood')
 
             pipeline.run(num_cores=1, num_runs = length, perturb_data=True)
-            
 
-        
             gpgr = dict()
             for ii in np.arange(len(unilocs)):
                 key = str(unilocs[ii][0]) + ', ' + str(unilocs[ii][1])
                 gpgr[unilocs[ii]] = pipeline.getResults(ii)['Data'][key]
             return gpgr
 
-        # If we are not removing sm and snow
-        # we are down now
+
+
+
+        # Load GRACE data
+        if self.use_mascons == False:
+            grace_data = getData(graceDF, len(unilocs), 'grace')
+        else:
+            grace_data = getData(graceDF, len(unilocs), 'mascon')
+
         if self.gldas.lower() == 'off':
-            grace_data = getData(graceDF, len(unilocs))
+        # We are not removing sm and snow
             return grace_data
 
         elif self.gldas.lower() == 'remove':
             # If we are removing sm and snow
-            grace_data = getData(graceDF, len(unilocs))            
             gldas_data = getData(gldasDF, len(unilocs))
 
             for key in grace_data:
