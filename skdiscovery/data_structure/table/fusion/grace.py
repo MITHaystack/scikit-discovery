@@ -46,7 +46,7 @@ class GraceFusion(PipelineItem):
     '''
 
     def __init__(self, str_description, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty', gldas = "Off",
-                 use_mascons=False):
+                 use_mascons=False, apply_scale_factor = True):
         '''
         Initialize Grace Fusion item
 
@@ -65,6 +65,7 @@ class GraceFusion(PipelineItem):
         # remove_sm_and_snow
         self.gldas = gldas
         self.use_mascons = use_mascons
+        self.apply_scale_factor = apply_scale_factor
         self._tileCache = None
 
         
@@ -161,10 +162,10 @@ class GraceFusion(PipelineItem):
             ac_data = DataAccumulator('Data',[])
             sc_data = StageContainer(ac_data)
 
-            fl_grace = CalibrateGRACE('Calibrate')
+            fl_grace = CalibrateGRACE('Calibrate', apply_scale_factor = self.apply_scale_factor)
             sc_grace = StageContainer(fl_grace)
 
-            fl_mascon = CalibrateGRACEMascon('CalibrateMascon')
+            fl_mascon = CalibrateGRACEMascon('CalibrateMascon', apply_scale_factor = self.apply_scale_factor)
             sc_mascon = StageContainer(fl_mascon)
 
             fl_resample = Resample('Resample',start_date, end_date)
