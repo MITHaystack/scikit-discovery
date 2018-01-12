@@ -36,7 +36,7 @@ class CalibrateGRACE(PipelineItem):
     Averages the three solutions and applies a scale factor
     '''
     
-    def __init__(self, str_description, ewd_column_name='EWD', round_dates = True):
+    def __init__(self, str_description, ewd_column_name='EWD', round_dates = True, apply_scale_factor = True):
         '''
         Initialize GRACE calibration filter
 
@@ -46,6 +46,7 @@ class CalibrateGRACE(PipelineItem):
         '''
         self.ewd_column_name = ewd_column_name
         self.round_dates = round_dates
+        self.apply_scale_factor = apply_scale_factor
         super(CalibrateGRACE, self).__init__(str_description)
         
     def process(self, obj_data):
@@ -57,8 +58,14 @@ class CalibrateGRACE(PipelineItem):
         label_list = []
         frame_list = []
         for label, data in obj_data.getIterator():
-            frame_list.append(pd.DataFrame(computeEWD(data, obj_data.info(label)['scale_factor'],
-                                          round_nearest_day=self.round_dates), columns=[self.ewd_column_name]))
+
+            if self.apply_scale_factor == True:
+                scale_factor = obj_data.info(label)['scale_factor']
+            else:
+                scale_factor = 1
+
+            frame_list.append(pd.DataFrame(computeEWD(data, scale_factor, round_nearest_day=self.round_dates),
+                                           columns=[self.ewd_column_name]))
 
             frame_list[-1].loc[:,self.ewd_column_name + '_Error'] = obj_data.info(label)['measurement_error']
             label_list.append(label)
