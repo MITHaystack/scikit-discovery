@@ -35,7 +35,73 @@ import pandas as pd
 
 import skdiscovery.utilities.planetary.map_util as mo
 
-def mogi(xdata, y, x, source_depth, amplitude, latlon=True):
+# def mogi(xdata, y, x, source_depth, amplitude, latlon=True):
+#     '''
+#     Compute the surface deformation due to changes in a mogi source
+
+#     @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
+#     @param y: Source y Position of (default: latitude)
+#     @param x: Source x Position (default longitude)
+#     @param source_depth: Depth of source
+#     @param amplitude: Amplitude of mogi source
+#     @param latlon: Source y is latitude and source x is longitude
+
+#     @return list of resulting deformation for each point in xdata
+#     '''
+#     source_coords = (y, x)
+
+#     results = []
+
+#     for data in xdata:
+
+#         dim = data[0]
+#         station_coords = (float(data[1]),float(data[2]))
+#         # print(station_coords)
+
+#         if latlon==True:
+#             y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
+#             x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
+#             x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
+#             y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
+#         else:
+#             y_distance = station_coords[0] - source_coords[0]
+#             x_distance = station_coords[1] - source_coords[1]
+
+#         R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
+
+#         result = None
+
+#         if dim == 'x':
+#             result = amplitude * x_distance / R3
+#         elif dim == 'y':
+#             result = amplitude * y_distance / R3
+#         elif dim == 'z':
+#             result = amplitude * source_depth / R3
+#         else:
+#             print("Did not understand dimension")
+
+#         results.append(result)
+#     return results
+
+
+
+def compute_distances(station_y, station_x, source_y, source_x, latlon=True):
+    if latlon==True:
+        y_distance = mo.wgs84_distance( (source_y, source_x), (station_y, source_x) )
+        x_distance = mo.wgs84_distance( (source_y, source_x), (source_y, station_x) )
+        x_distance = x_distance * np.sign(station_x - source_x)
+        y_distance = y_distance * np.sign(station_y - source_y)
+
+    else:
+        x_distance = station_x - source_x
+        y_distance = station_y - source_y
+
+
+    return y_distance, x_distance
+
+
+
+def mogi(station_y, station_x, source_y, source_x, source_depth, amplitude, latlon=True):
     '''
     Compute the surface deformation due to changes in a mogi source
 
@@ -48,44 +114,19 @@ def mogi(xdata, y, x, source_depth, amplitude, latlon=True):
 
     @return list of resulting deformation for each point in xdata
     '''
-    source_coords = (y, x)
 
-    results = []
+    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon)
 
-    for data in xdata:
+    R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
 
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
+    result_x = amplitude * x_distance / R3
+    result_y = amplitude * y_distance / R3
+    result_z = amplitude * source_depth / R3
 
-        if latlon==True:
-            y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-            x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-            x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-            y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
-        else:
-            y_distance = station_coords[0] - source_coords[0]
-            x_distance = station_coords[1] - source_coords[1]
-
-        R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
-
-        result = None
-
-        if dim == 'x':
-            result = amplitude * x_distance / R3
-        elif dim == 'y':
-            result = amplitude * y_distance / R3
-        elif dim == 'z':
-            result = amplitude * source_depth / R3
-        else:
-            print("Did not understand dimension")
-
-        results.append(result)
-    return results
+    return np.column_stack([result_x, result_y, result_z])
 
 
-
-def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
+def finite_sphere(station_y, station_x, source_y, source_x, source_depth, amplitude, alpha_rad, latlon=True):
     '''
     Compute the surface deformation due to changes in a finite sphere source
 
@@ -105,37 +146,20 @@ def finite_sphere(xdata, lat, lon, source_depth, amplitude, alpha_rad):
     nu_v = .25
     C1 = (1+nu_v)/(2*(-7+5*nu_v))
     C2 = 15*(-2+nu_v)/(4*(-7+5*nu_v))
-    source_coords = (lat, lon)
 
-    results = []
-
-    for data in xdata:
-
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
-
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
-
-        R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
-        result = None
-        if dim == 'x':
-            result = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * x_distance / R3
-        elif dim == 'y':
-            result = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * y_distance / R3
-        elif dim == 'z':
-            result = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * source_depth / R3
-        else:
-            print("Did not understand dimension")
-
-        results.append(result)
-    return results
+    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon)
 
 
-def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
+    R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
+
+    result_x = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * x_distance / R3
+    result_y = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * y_distance / R3
+    result_z = amplitude *alpha_rad**3*(1+(alpha_rad/source_depth)**3*(C1+C2*source_depth**2/R3**(2/3))) * source_depth / R3
+
+    return np.column_stack([result_x, result_y, result_z])
+
+
+def closed_pipe(station_y, station_x, source_y, source_x, source_depth, amplitude, pipe_delta, latlon=True):
     '''
     Compute the surface deformation due to changes in a closed pipe source
 
@@ -152,38 +176,21 @@ def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     @return list of resulting deformation for each point in xdata
     '''
     nu_v = .25
-    source_coords = (lat, lon)
 
-    results = []
+    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon=latlon)
 
-    for data in xdata:
+    c1 = source_depth + pipe_delta
+    c2 = source_depth - pipe_delta
+    R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
+    R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
+    r2  = (x_distance**2 + y_distance**2)
 
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
 
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
+    result_x = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
+    result_y = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
+    result_z = - amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
 
-        result = None
-        c1 = source_depth + pipe_delta
-        c2 = source_depth - pipe_delta
-        R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
-        R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
-        r2  = (x_distance**2 + y_distance**2)
-        if dim == 'x':
-            result = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
-        elif dim == 'y':
-            result = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
-        elif dim == 'z':
-            result = - amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
-        else:
-            print("Did not understand dimension")
-
-        results.append(result)
-    return results
+    return np.column_stack([result_x, result_y, result_z])
 
 
 def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
@@ -203,6 +210,9 @@ def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     @return list of resulting deformation for each point in xdata
     '''
     nu_v = .25
+    C1 = (1+nu_v)/(2*(-7+5*nu_v))
+    C2 = 15*(-2+nu_v)/(4*(-7+5*nu_v))
+
     source_coords = (lat, lon)
 
     results = []
