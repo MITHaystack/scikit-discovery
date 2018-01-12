@@ -3,8 +3,8 @@
 #
 # Authors: Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for
-# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
-# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface
 # Deformation Phenomena" (PI: V. Pankratius)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -13,7 +13,7 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -39,10 +39,10 @@ import numpy as np
 
 
 class GraceFusion(PipelineItem):
-    ''' 
+    '''
     Fuses GRACE equivelent water depth time series
 
-    Works on table data (original data from http://grace.jpl.nasa.gov/data/get-data/monthly-mass-grids-land/) 
+    Works on table data (original data from http://grace.jpl.nasa.gov/data/get-data/monthly-mass-grids-land/)
     '''
 
     def __init__(self, str_description, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty', gldas = "Off",
@@ -68,9 +68,9 @@ class GraceFusion(PipelineItem):
         self.apply_scale_factor = apply_scale_factor
         self._tileCache = None
 
-        
+
     def process(self, obj_data):
-        ''' 
+        '''
         Adds columns for GRACE data and uncertainties
 
         @param obj_data: Input DataWrapper, will be modified in place
@@ -78,11 +78,9 @@ class GraceFusion(PipelineItem):
 
         # Only perform fusion if data exists
         if obj_data.getLength() > 0:
-            # if nothing is cached, load generate and cache data
-            if self._tileCache == None:
-                self._tileCache = self._gen_tile_cache(obj_data)
+            start_date = None
+            end_date = None
 
-            # grab correct index from the unique locations list to grab the correct GRACE result
             for label, data in obj_data.getIterator():
                 try:
                     lat = self.metadata[label]['Lat']
@@ -90,192 +88,144 @@ class GraceFusion(PipelineItem):
                 except:
                     lat = self.metadata.loc[label,'Lat']
                     lon = self.metadata.loc[label,'Lon']
-                    
-                idx = (int(np.floor(lat)),int(np.floor(lon)))
-                # check if key in cache, and if not overwrite
-                if idx not in self._tileCache.keys():
-                    self._tileCache = self._gen_tile_cache(obj_data)
 
-                if self.gldas.lower() != 'only':
-                    grace_data = self._tileCache[idx]['EWD']
+                locations = [(lat,lon)]
+
+                if start_date == None:
+                    start_date = data.index[0]
+                    end_date = data.index[-1]
                 else:
-                    grace_data = self._tileCache[idx]['GLDAS']
-                grace_err  = self._tileCache[idx]['EWD_Error']
-                obj_data.addColumn(label, self.column_data_name, grace_data)
-                obj_data.addColumn(label, self.column_error_name, grace_err)
-
-    def _gen_tile_cache(self,obj_data):
-        ''' 
-        Builds a data cache of the GRACE results for the unique tiles
-
-        @param obj_data: Input DataWrapper for grabbing data
-
-        @return Dictionary the GRACE results for each coordinate
-        '''
-        locations = []
-        
-        start_date = None
-        end_date = None
-        
-        for label, data in obj_data.getIterator():
-            try:
-                lat = self.metadata[label]['Lat']
-                lon = self.metadata[label]['Lon']
-            except:
-                lat = self.metadata.loc[label,'Lat']
-                lon = self.metadata.loc[label,'Lon']
-                
-            locations.append([lat,lon])
-
-            if start_date == None:
-                start_date = data.index[0]
-                end_date = data.index[-1]
-            else:
-                if start_date != data.index[0] \
-                or end_date != data.index[-1]:
-                    raise RuntimeError("Varying starting and ending dates not supported")
-            
-        unilocs = [urow for urow in {tuple(row) for row in np.floor(locations)}]
-
-        fetcher_unilocs = [[urow] for urow in {tuple(row) for row in np.floor(locations)}]
-        al_locations = AutoListCycle(fetcher_unilocs)
-        al_locations_gldas = AutoListCycle(fetcher_unilocs)
-
-        if self.use_mascons == False:
-            graceDF = GDF([al_locations], start_date, end_date)
-
-        else:
-            graceDF = MasconDF([al_locations], start_date, end_date)
+                    if start_date != data.index[0] \
+                    or end_date != data.index[-1]:
+                        raise RuntimeError("Varying starting and ending dates not supported")
 
 
-        gldasDF = GLDASDF([al_locations_gldas], start_date, end_date)
+                al_locations = AutoList(locations)
+                al_locations_gldas = AutoList(locations)
+                if self.use_mascons == False:
+                    graceDF = GDF([al_locations], start_date, end_date)
 
-        
+                else:
+                    graceDF = MasconDF([al_locations], start_date, end_date)
 
-        # fl_interp = InterpolateFilter('Interpolate',[])
-        # sc_interp = StageContainer(fl_interp)
-        
-        # grace_pipe = DiscoveryPipeline(graceDF, [sc_interp,sc_data])
-
-        def getData(datafetcher,length, pipe_type):
-
-            ac_data = DataAccumulator('Data',[])
-            sc_data = StageContainer(ac_data)
-
-            fl_grace = CalibrateGRACE('Calibrate', apply_scale_factor = self.apply_scale_factor)
-            sc_grace = StageContainer(fl_grace)
-
-            fl_mascon = CalibrateGRACEMascon('CalibrateMascon', apply_scale_factor = self.apply_scale_factor)
-            sc_mascon = StageContainer(fl_mascon)
-
-            fl_resample = Resample('Resample',start_date, end_date)
-            sc_resample = StageContainer(fl_resample)
+                gldasDF = GLDASDF([al_locations_gldas], start_date, end_date)
 
 
-            if pipe_type == 'grace':
-                pipeline = DiscoveryPipeline(datafetcher, [sc_grace, sc_resample, sc_data])
+                def getData(datafetcher, pipe_type):
 
-            elif pipe_type == 'mascon':
-                pipeline = DiscoveryPipeline(datafetcher, [sc_mascon, sc_resample, sc_data])
+                    ac_data = DataAccumulator('Data',[])
+                    sc_data = StageContainer(ac_data)
 
-            elif pipe_type == 'gldas':
-                pipeline = DiscoveryPipeline(datafetcher, [sc_resample, sc_data])
+                    fl_grace = CalibrateGRACE('Calibrate', apply_scale_factor = self.apply_scale_factor)
+                    sc_grace = StageContainer(fl_grace)
 
-            else:
-                raise RuntimeError('pipe_type: ' + str(pipe_type) + ' not understood')
+                    fl_mascon = CalibrateGRACEMascon('CalibrateMascon', apply_scale_factor = self.apply_scale_factor)
+                    sc_mascon = StageContainer(fl_mascon)
 
-            pipeline.run(num_cores=1, num_runs = length, perturb_data=True)
+                    fl_resample = Resample('Resample',start_date, end_date)
+                    sc_resample = StageContainer(fl_resample)
 
-            gpgr = dict()
-            for ii in np.arange(len(unilocs)):
-                key = str(unilocs[ii][0]) + ', ' + str(unilocs[ii][1])
-                gpgr[unilocs[ii]] = pipeline.getResults(ii)['Data'][key]
-            return gpgr
+                    if pipe_type == 'grace':
+                        pipeline = DiscoveryPipeline(datafetcher, [sc_grace, sc_resample, sc_data])
+
+                    elif pipe_type == 'mascon':
+                        pipeline = DiscoveryPipeline(datafetcher, [sc_mascon, sc_resample, sc_data])
+
+                    elif pipe_type == 'gldas':
+                        pipeline = DiscoveryPipeline(datafetcher, [sc_resample, sc_data])
+
+                    else:
+                        raise RuntimeError('pipe_type: ' + str(pipe_type) + ' not understood')
+
+                    pipeline.run(num_cores=1)
+
+                    key = list(pipeline.getResults(0)['Data'].keys())[0]
+
+                    return pipeline.getResults(0)['Data'][key]
 
 
 
+                # Load GRACE data
+                if self.use_mascons == False:
+                    grace_data = getData(graceDF, 'grace')
+                else:
+                    grace_data = getData(graceDF, 'mascon')
 
-        # Load GRACE data
-        if self.use_mascons == False:
-            grace_data = getData(graceDF, len(unilocs), 'grace')
-        else:
-            grace_data = getData(graceDF, len(unilocs), 'mascon')
+                if self.gldas.lower() == 'off':
+                # We are not removing sm and snow
+                    obj_data.addColumn(label, self.column_data_name, grace_data['EWD'])
+                    obj_data.addColumn(label, self.column_error_name, grace_data['EWD_Error'])
 
-        if self.gldas.lower() == 'off':
-        # We are not removing sm and snow
-            return grace_data
-
-        elif self.gldas.lower() == 'remove':
-            # If we are removing sm and snow
-            gldas_data = getData(gldasDF, len(unilocs))
-
-            for key in grace_data:
-                grace = grace_data[key]['Data']
-                gldas = gldas_data[key]['Data']
-
-                grace_index = grace.index
-                grace.dropna(inplace=True)
-
-                # If no grace data available, no need to remove gldas
-                if len(grace) == 0:
-                    continue
-
-                # Get matching start and end
-                start_grace = grace.index[0]
-                end_grace = grace.index[-1]
-                start_gldas = gldas.index[0]
-                end_gldas = gldas.index[-1]
-
-                start_month = np.max([start_gldas,start_grace]).strftime('%Y-%m')
-                end_month = np.min([end_gldas,end_grace]).strftime('%Y-%m')
-
-                # Convert gldas to a data frame
-                # and save index
-                # gldas = gldas.loc[:,:,'GLDAS'].copy()
-                gldas.loc[:,'Date'] = gldas.index
-
-                # Index GLDAS data by month
-                new_index = [date.strftime('%Y-%m') for date in gldas.index]
-                gldas.loc[:,'Month'] = new_index
-                gldas.set_index('Month',inplace=True)
-
-                # select only months that are also in GRACE
-                cut_gldas = gldas.loc[[date.strftime('%Y-%m') for date in grace.loc[start_month:end_month,:].index],:]
-
-                # index GLDAS data to GRACE dates
-                cut_gldas.loc[:,'Grace Index'] =  grace.loc[start_month:end_month,:].index
-                cut_gldas.set_index('Grace Index', inplace=True)
+                elif self.gldas.lower() == 'remove':
+                    # If we are removing sm and snow
+                    gldas_data = getData(gldasDF, 'gldas')
 
 
-                # Calculate distance between days
-                offset_days = cut_gldas.index - cut_gldas.loc[:,'Date']
-                offset_days = offset_days.apply(lambda t: t.days)
-                cut_gldas.loc[:,'Offset'] = offset_days            
+                    grace = grace_data['Data']
+                    gldas = gldas_data['Data']
+
+                    grace_index = grace.index
+                    grace.dropna(inplace=True)
+
+                    # If no grace data available, no need to remove gldas
+                    if len(grace) == 0:
+                        continue
+
+                    # Get matching start and end
+                    start_grace = grace.index[0]
+                    end_grace = grace.index[-1]
+                    start_gldas = gldas.index[0]
+                    end_gldas = gldas.index[-1]
+
+                    start_month = np.max([start_gldas,start_grace]).strftime('%Y-%m')
+                    end_month = np.min([end_gldas,end_grace]).strftime('%Y-%m')
+
+                    # Convert gldas to a data frame
+                    # and save index
+                    # gldas = gldas.loc[:,:,'GLDAS'].copy()
+                    gldas.loc[:,'Date'] = gldas.index
+
+                    # Index GLDAS data by month
+                    new_index = [date.strftime('%Y-%m') for date in gldas.index]
+                    gldas.loc[:,'Month'] = new_index
+                    gldas.set_index('Month',inplace=True)
+
+                    # select only months that are also in GRACE
+                    cut_gldas = gldas.loc[[date.strftime('%Y-%m') for date in grace.loc[start_month:end_month,:].index],:]
+
+                    # index GLDAS data to GRACE dates
+                    cut_gldas.loc[:,'Grace Index'] =  grace.loc[start_month:end_month,:].index
+                    cut_gldas.set_index('Grace Index', inplace=True)
 
 
-                # Remove any data where the difference between gldas and grace are > 10 days            
-                cut_gldas = cut_gldas[np.abs(cut_gldas.loc[:,'Offset']) < 10].copy()
+                    # Calculate distance between days
+                    offset_days = cut_gldas.index - cut_gldas.loc[:,'Date']
+                    offset_days = offset_days.apply(lambda t: t.days)
+                    cut_gldas.loc[:,'Offset'] = offset_days
 
-                # Select appropriate Grace Data
-                cut_grace = grace.loc[cut_gldas.index,:]
 
-                # Remove contribution of snow + sm to GRACE
-                cut_grace.loc[:,'Grace'] = cut_grace.loc[:,'Grace'] - cut_gldas['GLDAS']
+                    # Remove any data where the difference between gldas and grace are > 10 days
+                    cut_gldas = cut_gldas[np.abs(cut_gldas.loc[:,'Offset']) < 10].copy()
 
-                # Now restore to original index, filling in with NaN's
-                grace = cut_grace.reindex(grace_index)
+                    # Select appropriate Grace Data
+                    cut_grace = grace.loc[cut_gldas.index,:]
 
-                # index, place the result back into the 
-                grace_data[key]['Data'] = grace
+                    # Remove contribution of snow + sm to GRACE
+                    cut_grace.loc[:,'Grace'] = cut_grace.loc[:,'Grace'] - cut_gldas['GLDAS']
 
-            # All the snow and sm contribution has been removed,
-            # so the dictinoary can now be returned
+                    # Now restore to original index, filling in with NaN's
+                    grace = cut_grace.reindex(grace_index)
 
-            return grace_data
-    
+                    # index, place the result back into the
+                    grace_data[key]['Data'] = grace
 
-        elif self.gldas.lower() == 'only':
-            return getData(gldasDF, len(unilocs))
+                    # All the snow and sm contribution has been removed,
+                    # so the dictionary can now be returned
+                    obj_data.addColumn(label, self.column_data_name, grace_data['EWD'])
+                    obj_data.addColumn(label, self.column_error_name, grace_data['EWD_Error'])
 
-        else:
-            raise ValueError('Did not understand gldas option: ' + self.gldas.lower())
+                elif self.gldas.lower() == 'only':
+                    obj_data.addColumn(label, self.column_data_name, ['EWD'])
+
+                else:
+                    raise ValueError('Did not understand gldas option: ' + self.gldas.lower())
