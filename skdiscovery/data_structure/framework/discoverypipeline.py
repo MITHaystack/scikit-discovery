@@ -414,7 +414,9 @@ class DiscoveryPipeline:
 
             return data_container.getResults()
 
-        self.__cluster = dispy.SharedJobCluster(amazon_run, secret=secret, port=0)
+        self.__cluster = dispy.SharedJobCluster(amazon_run, secret=secret, port=0,
+                                                scheduler_node='127.0.0.1',
+                                                ip_addr='127.0.0.1')
 
         # for i in range(1000):
         #     try:
