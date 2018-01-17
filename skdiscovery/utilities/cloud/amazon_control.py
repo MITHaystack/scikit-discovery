@@ -288,7 +288,7 @@ def startDispyNode():
         stdin, stdout, stderr = instance['tunnel'].ssh.exec_command(command + " '" + dispy_pass + "'\"")
 
     # Need to give ample time for dispynode to start
-    time.sleep(60)
+    time.sleep(120)
 
 
 def resetInstances():
