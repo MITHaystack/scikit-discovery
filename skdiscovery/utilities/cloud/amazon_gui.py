@@ -256,6 +256,9 @@ def drawGUI():
     display(widget_dict['new_num_instances_widget'])
     display(widget_dict['aws_status_widget'])
     display(widget_dict['execute_instances_button'])
+    # Need to disable after displaying in ipywidgets 7
+    widget_dict['execute_instances_button'].disabled=True
+    widget_dict['execute_instances_button'].button_style=''
 
 
 
