@@ -204,6 +204,8 @@ def setNumInstances(new_total_instances, instance_type, image_id):
 
 
     elif delta_instances < 0:
+
+        closeDispyScheduler()
         ec2_client.terminate_instances(InstanceIds=[a['amazon_id'] for a in 
                                                          amazon_list[delta_instances:]])
 
