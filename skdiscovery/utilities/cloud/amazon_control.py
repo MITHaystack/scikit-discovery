@@ -137,9 +137,9 @@ def startDispyScheduler():
 
     global popen
     
-    args = ['dispyscheduler.py', '--node_secret', dispy_pass, '--ext_ip_addr',
+    args = ['dispyscheduler.py', '--node_secret', dispy_pass, '--ip_addr',
             '127.0.0.1', '--cluster_secret', dispy_pass, '--pulse_interval',
-            '60','--daemon','--msg_timeout', '60', '--httpd']
+            '60','--msg_timeout', '60', '--httpd', '-p', '61234']
 
     for info in amazon_list:
         args.append('-n')
@@ -157,8 +157,9 @@ def generateInfo(instance):
     new_info = OrderedDict()
     new_info['amazon_id'] = instance.id
     new_info['state'] = instance.state['Name']
-    new_info['tunnel'] = None
     new_info['ip_address'] = instance.public_ip_address
+    new_info['tunnel'] = None
+    new_info['instance'] = instance
     return new_info
 
 def updateStatus():
@@ -217,28 +218,48 @@ def setNumInstances(new_total_instances, instance_type, image_id):
         startDispyNode()
         startDispyScheduler()
 
+
+def update_ip_address(instance_info):
+    try:
+        information = ec2_client.describe_instances(InstanceIds=[instance_info['amazon_id']])[0]
+
+        if 'PublicIpAddress' in information:
+            instance_info['ip_address'] = informaiton['PublicIpAddress']
+    except KeyError:
+        pass
+
         
 def createTunnels():
     ''' Create reverse ssh tunnels to all instances '''
 
-    def good_connection(instance_ip):
+    def good_connection(instance):
         test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            test_socket.connect((instance_ip, 22))
-            return True
-        except socket.error:
-            return False     
+            if instance['ip_address'] == None:
+                update_ip_address(instance)
+
+
+            if instance['ip_address'] != None:
+
+                test_socket.connect((instance['ip_address'], 22))
+                return True
+
+            else:
+                return False
+
+        except (socket.error, TypeError):
+            return False
 
     while len([i for i in amazon_list if i['tunnel'] == None]) > 0:
-        time.sleep(5)            
+        time.sleep(5)
         for instance in amazon_list:
             if instance['tunnel'] == None and instance['state'] == 'running' \
-               and good_connection(instance['ip_address']):
+               and good_connection(instance):
 
                 try:
                     instance['tunnel'] = \
                                 ReverseTunnel(instance['ip_address'], 'ubuntu',
-                                              pem_file,51347, '127.0.0.1',51347, check=30)
+                                              pem_file, 61234, '127.0.0.1', 61234, check=30)
                     instance['tunnel'].create_reverse_tunnel()
                 except SSHException:
                     print('cannot create tunnel')
