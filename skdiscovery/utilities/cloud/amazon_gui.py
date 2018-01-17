@@ -192,10 +192,10 @@ def init():
 
     # Controlling Instances
     # Label converted to text    
-    # widget_dict['label_num_instances'] = widgets.Label(value='Set Number of Instances: ')
+    widget_dict['label_num_instances'] = widgets.Label(value='Set Number of Instances: ')
     widget_dict['new_num_instances_widget'] = widgets.IntSlider(
         disabled = True,
-        description = 'Set Number of Instances:',
+        description = '',
         value = 0,
         min=0,
         max=10,
@@ -253,7 +253,7 @@ def drawGUI():
     # display(widgets.HBox([widget_dict['label_num_instances'], widget_dict['new_num_instances_widget']]))
     # display(widgets.HBox([widget_dict['run_label'], widget_dict['aws_status_widget']]))
 
-    display(widget_dict['new_num_instances_widget'])
+    display(widgets.HBox([widget_dict['label_num_instances'], widget_dict['new_num_instances_widget']]))
     display(widget_dict['aws_status_widget'])
     display(widget_dict['execute_instances_button'])
     # Need to disable after displaying in ipywidgets 7
