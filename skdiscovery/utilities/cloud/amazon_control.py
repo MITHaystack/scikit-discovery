@@ -230,33 +230,40 @@ def update_ip_address(instance_info):
     except KeyError:
         pass
 
-        
+
+def good_connection(instance, port):
+    test_socket = socket.socket()
+
+    success = False
+
+    try:
+        if instance['ip_address'] == None:
+            update_ip_address(instance)
+
+
+        if instance['ip_address'] != None:
+
+            test_socket.connect((instance['ip_address'], port))
+            test_socket.shutdown(socket.SHUT_RDWR)
+            test_socket.close()
+
+            success = True
+
+    except (socket.error, TypeError):
+        pass
+
+    return success
+
+
 def createTunnels():
     ''' Create reverse ssh tunnels to all instances '''
 
-    def good_connection(instance):
-        test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            if instance['ip_address'] == None:
-                update_ip_address(instance)
-
-
-            if instance['ip_address'] != None:
-
-                test_socket.connect((instance['ip_address'], 22))
-                return True
-
-            else:
-                return False
-
-        except (socket.error, TypeError):
-            return False
 
     while len([i for i in amazon_list if i['tunnel'] == None]) > 0:
         time.sleep(5)
         for instance in amazon_list:
             if instance['tunnel'] == None and instance['state'] == 'running' \
-               and good_connection(instance):
+               and good_connection(instance, 22):
 
                 try:
                     instance['tunnel'] = \
@@ -287,8 +294,19 @@ def startDispyNode():
     for instance in amazon_list:
         stdin, stdout, stderr = instance['tunnel'].ssh.exec_command(command + " '" + dispy_pass + "'\"")
 
-    # Need to give ample time for dispynode to start
-    time.sleep(120)
+    # Need to give time for dispynode to start
+    time.sleep(20)
+
+
+    index = 0
+    while index < len(amazon_list):
+        if good_connection(amazon_list[index], 51348):
+            index += 1
+
+        else:
+            time.sleep(10)
+
+    time.sleep(10)
 
 
 def resetInstances():
