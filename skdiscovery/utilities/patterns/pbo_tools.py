@@ -85,23 +85,23 @@ import skdiscovery.utilities.planetary.map_util as mo
 
 
 
-def compute_distances(station_y, station_x, source_y, source_x, latlon=True):
+def compute_distances(position_y, position_x, source_y, source_x, latlon=True):
     if latlon==True:
-        y_distance = mo.wgs84_distance( (source_y, source_x), (station_y, source_x) )
-        x_distance = mo.wgs84_distance( (source_y, source_x), (source_y, station_x) )
-        x_distance = x_distance * np.sign(station_x - source_x)
-        y_distance = y_distance * np.sign(station_y - source_y)
+        y_distance = mo.wgs84_distance( (source_y, source_x), (position_y, source_x) )
+        x_distance = mo.wgs84_distance( (source_y, source_x), (source_y, position_x) )
+        x_distance = x_distance * np.sign(position_x - source_x)
+        y_distance = y_distance * np.sign(position_y - source_y)
 
     else:
-        x_distance = station_x - source_x
-        y_distance = station_y - source_y
+        x_distance = position_x - source_x
+        y_distance = position_y - source_y
 
 
     return y_distance, x_distance
 
 
 
-def mogi(station_y, station_x, source_y, source_x, source_depth, amplitude, latlon=True):
+def mogi(position_y, position_x, source_y, source_x, source_depth, amplitude, latlon=True):
     '''
     Compute the surface deformation due to changes in a mogi source
 
@@ -115,7 +115,7 @@ def mogi(station_y, station_x, source_y, source_x, source_depth, amplitude, latl
     @return list of resulting deformation for each point in xdata
     '''
 
-    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon)
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)
 
     R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
 
@@ -126,7 +126,7 @@ def mogi(station_y, station_x, source_y, source_x, source_depth, amplitude, latl
     return np.column_stack([result_x, result_y, result_z])
 
 
-def finite_sphere(station_y, station_x, source_y, source_x, source_depth, amplitude, alpha_rad, latlon=True):
+def finite_sphere(position_y, position_x, source_y, source_x, source_depth, amplitude, alpha_rad, latlon=True):
     '''
     Compute the surface deformation due to changes in a finite sphere source
 
@@ -147,7 +147,7 @@ def finite_sphere(station_y, station_x, source_y, source_x, source_depth, amplit
     C1 = (1+nu_v)/(2*(-7+5*nu_v))
     C2 = 15*(-2+nu_v)/(4*(-7+5*nu_v))
 
-    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon)
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)
 
 
     R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
@@ -159,7 +159,7 @@ def finite_sphere(station_y, station_x, source_y, source_x, source_depth, amplit
     return np.column_stack([result_x, result_y, result_z])
 
 
-def closed_pipe(station_y, station_x, source_y, source_x, source_depth, amplitude, pipe_delta, latlon=True):
+def closed_pipe(position_y, position_x, source_y, source_x, source_depth, amplitude, pipe_delta, latlon=True):
     '''
     Compute the surface deformation due to changes in a closed pipe source
 
@@ -177,7 +177,7 @@ def closed_pipe(station_y, station_x, source_y, source_x, source_depth, amplitud
     '''
     nu_v = .25
 
-    y_distance, x_distance = compute_distances(station_y, station_x, source_y, source_x, latlon=latlon)
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon=latlon)
 
     c1 = source_depth + pipe_delta
     c2 = source_depth - pipe_delta
@@ -186,9 +186,9 @@ def closed_pipe(station_y, station_x, source_y, source_x, source_depth, amplitud
     r2  = (x_distance**2 + y_distance**2)
 
 
-    result_x = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
-    result_y = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
-    result_z = - amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
+    result_x = -1 * amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
+    result_y = -1 * amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
+    result_z = amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
 
     return np.column_stack([result_x, result_y, result_z])
 
@@ -299,48 +299,33 @@ def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_p
     return results
 
 
-def sill(xdata, lat, lon, source_depth, amplitude):
+def sill(position_y, position_x, source_y, source_x, source_depth, amplitude):
     '''
     Compute the surface deformation due to changes in a sill-like source
 
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 297
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param position_y: Station y location
+    @param position_x: Station x location
+    @param source_y: y position of source
+    @param source_x: x position of source
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
 
     @return list of resulting deformation for each point in xdata
     '''
-    source_coords = (lat, lon)
-    results = []
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)    
 
-    for data in xdata:
+    R5 = (x_distance**2 + y_distance**2 + source_depth**2)**(5/2)
 
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
+    result_x = amplitude * x_distance * source_depth**2 / R5
 
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
+    result_y = amplitude * y_distance * source_depth**2 / R5
 
-        R5 = (x_distance**2 + y_distance**2 + source_depth**2)**(5/2)
-        result = None
-        if dim == 'x':
-            result = amplitude * x_distance * source_depth**2 / R5
-        elif dim == 'y':
-            result = amplitude * y_distance * source_depth**2 / R5
-        elif dim == 'z':
-            result = amplitude * source_depth**3 / R5
-        else:
-            print("Did not understand dimension")
+    result_z = amplitude * source_depth**3 / R5
 
-        results.append(result)
-    return results
+    return np.column_stack([result_x, result_y, result_z])
 
 
 def dirEigenvectors(coord_list, pca_comps,pdir='H'):
