@@ -32,7 +32,7 @@ import skdaccess.utilities.pbo_util as pbo_utils
 from skdiscovery.data_structure.framework import PipelineItem
 
 import skdiscovery.utilities.patterns.pbo_tools as pbo_tools
-
+from skdiscovery.utilities.patterns.pbo_tools import SourceWrapper, MogiVectors
 
 class Mogi_Inversion(PipelineItem):
     '''
@@ -133,7 +133,8 @@ class Mogi_Inversion(PipelineItem):
         '''
         h_pca_name = self.pca_name
         
-        exN = {'mogi':0,'finite_sphere':1,'closed_pipe':1,'constant_open_pipe':1,'rising_open_pipe':2,'sill':0}
+        exN = {'mogi':0,'finite_sphere':1,'closed_pipe':1,'constant_open_pipe':1,'rising_open_pipe':1,'sill':0}
+
         try:
             mag_source = getattr(pbo_tools,self.ap_paramList[0]().lower())
             ExScParams = tuple(np.ones((exN[self.ap_paramList[0]().lower()],)))
@@ -141,6 +142,10 @@ class Mogi_Inversion(PipelineItem):
             mag_source = pbo_tools.mogi
             ExScParams = ()
             print('No source type called '+self.ap_paramList[0]()+', defaulting to a Mogi source.')
+
+
+        wrapped_mag_source = SourceWrapper(mag_source)
+
                 
         projection = obj_data.getResults()[h_pca_name]['Projection']
         start_date = obj_data.getResults()[h_pca_name]['start_date']
@@ -188,7 +193,7 @@ class Mogi_Inversion(PipelineItem):
         lat_guess = np.mean(coord_range[0,:])
         lon_guess = np.mean(coord_range[1,:])
 
-        fit = optimize.curve_fit(mag_source, xdata, ydata, (lat_guess, lon_guess, 5, 1e-4)+ExScParams)
+        fit = optimize.curve_fit(wrapped_mag_source, xdata, ydata, (lat_guess, lon_guess, 5, 1e-4)+ExScParams)
 
         res = collections.OrderedDict()
 
@@ -217,45 +222,3 @@ class Mogi_Inversion(PipelineItem):
         #                              station_list, meta_data))
 
 
-def MogiVectors(mogi_res,station_lat_list,station_lon_list,flag3D=False):
-    '''
-    Creates a set of mogi vectors for plotting
-
-    @param mogi_res: Magma source
-    @param station_lat_list: List of station latitudes
-    @param station_lon_list: List of station longitudes
-    @param flag3D: Make vectors 3 dimensional, defaults to False (2D)
-    '''
-    
-    # grab the correct magma forward function
-    mag_source = getattr(pbo_tools,mogi_res['source_type'])
-
-    mogi_x_disp = []
-    mogi_y_disp = []
-    for lat, lon in zip(station_lat_list, station_lon_list):
-        mogi_data = []
-
-        mogi_data.append( ('x', lat, lon) )
-        mogi_data.append( ('y', lat, lon) )
-        if flag3D:
-            mogi_data.append( ('z', lat, lon) )
-
-        if np.isnan(mogi_res['ex_params']).any()==True:
-            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
-                             mogi_res['depth'], mogi_res['amplitude'])
-        elif len(mogi_res['ex_params'])==1:
-            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
-                             mogi_res['depth'], mogi_res['amplitude'],mogi_res['ex_params'][0])
-        elif len(mogi_res['ex_params'])==2:
-            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
-                             mogi_res['depth'], mogi_res['amplitude'],mogi_res['ex_params'][0],mogi_res['ex_params'][1])
-
-        mogi_x_disp.append(res[0])
-        mogi_y_disp.append(res[1])
-
-    # the scaling here is because mogi distance vectors are in km
-    # the factor converts to mm and scales by the pca change
-    mogi_x_disp = np.array(mogi_x_disp) * 1e6 / (mogi_res['pca_amplitude'])
-    mogi_y_disp = np.array(mogi_y_disp) * 1e6 / (mogi_res['pca_amplitude'])
-    
-    return mogi_x_disp, mogi_y_disp

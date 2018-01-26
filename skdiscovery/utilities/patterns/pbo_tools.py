@@ -35,54 +35,47 @@ import pandas as pd
 
 import skdiscovery.utilities.planetary.map_util as mo
 
-# def mogi(xdata, y, x, source_depth, amplitude, latlon=True):
-#     '''
-#     Compute the surface deformation due to changes in a mogi source
+class SourceWrapper(object):
 
-#     @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-#     @param y: Source y Position of (default: latitude)
-#     @param x: Source x Position (default longitude)
-#     @param source_depth: Depth of source
-#     @param amplitude: Amplitude of mogi source
-#     @param latlon: Source y is latitude and source x is longitude
+    def __init__(self, source_method):
 
-#     @return list of resulting deformation for each point in xdata
-#     '''
-#     source_coords = (y, x)
+        self.source_method = source_method
 
-#     results = []
+    def __call__(self, *args):
 
-#     for data in xdata:
+        xdata = args[0]
+        args = args[1:]
 
-#         dim = data[0]
-#         station_coords = (float(data[1]),float(data[2]))
-#         # print(station_coords)
+        results = []
 
-#         if latlon==True:
-#             y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-#             x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-#             x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-#             y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
-#         else:
-#             y_distance = station_coords[0] - source_coords[0]
-#             x_distance = station_coords[1] - source_coords[1]
+        for data in xdata:
+            direction = data[0]
+            lat = float(data[1])
+            lon = float(data[2])
 
-#         R3 = (x_distance**2 + y_distance**2 + source_depth**2)**(3/2)
+            function_res = self.source_method(lat, lon, *args)
 
-#         result = None
+            if direction == 'x':
+                results.append(function_res[0,0])
+            elif direction == 'y':
+                results.append(function_res[0,1])
+            elif direction == 'z':
+                results.append(function_res[0,2])
 
-#         if dim == 'x':
-#             result = amplitude * x_distance / R3
-#         elif dim == 'y':
-#             result = amplitude * y_distance / R3
-#         elif dim == 'z':
-#             result = amplitude * source_depth / R3
-#         else:
-#             print("Did not understand dimension")
+        return results
 
-#         results.append(result)
-#     return results
+def getLength(position_y, position_x):
 
+    length_y = 1
+    length_x = 1
+
+    if not np.isscalar(position_y):
+        length_y = len(position_y)
+
+    if not np.isscalar(position_x):
+        length_x = len(position_x)
+
+    return max(length_y, length_x)
 
 
 def compute_distances(position_y, position_x, source_y, source_x, latlon=True):
@@ -179,21 +172,21 @@ def closed_pipe(position_y, position_x, source_y, source_x, source_depth, amplit
 
     y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon=latlon)
 
-    c1 = source_depth + pipe_delta
-    c2 = source_depth - pipe_delta
+    c1 = source_depth - pipe_delta
+    c2 = source_depth + pipe_delta
     R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
     R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
     r2  = (x_distance**2 + y_distance**2)
 
 
-    result_x = -1 * amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
-    result_y = -1 * amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
-    result_z = amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
+    result_x = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * x_distance / r2
+    result_y = amplitude *((c1/R_1)**3+2*c1*(-3+5*nu_v)/R_1+(5*c2**3*(1-2*nu_v)-2*c2*r2*(-3+5*nu_v))/R_2**3) * y_distance / r2
+    result_z = -1*amplitude *(c1**2/R_1**3+2*(-2+5*nu_v)/R_1+(c2**2*(3-10*nu_v)-2*r2*(-2+5*nu_v))/R_2**3)
 
     return np.column_stack([result_x, result_y, result_z])
 
 
-def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
+def constant_open_pipe(position_y, position_x, source_y, source_x, source_depth, amplitude, pipe_delta, latlon=True):
     '''
     Compute the surface deformation due to changes in a constant width open pipe source
 
@@ -213,41 +206,30 @@ def constant_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
     C1 = (1+nu_v)/(2*(-7+5*nu_v))
     C2 = 15*(-2+nu_v)/(4*(-7+5*nu_v))
 
-    source_coords = (lat, lon)
 
-    results = []
+    result_length = getLength(position_y, position_x)
+    result = np.zeros([result_length, 3])
 
-    for data in xdata:
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon=latlon)
 
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
+    c1 = source_depth + pipe_delta
+    c2 = source_depth - pipe_delta
+    R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
+    R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
+    r2  = (x_distance**2 + y_distance**2)
 
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
+    result[:,0] = amplitude *((c1/R_1)**3-2*c1*(1+nu_v)/R_1+(c2**3*(1+2*nu_v)+2*c2*r2*(1+nu_v))/R_2**3)* x_distance / r2
+    result[:,1] = amplitude *((c1/R_1)**3-2*c1*(1+nu_v)/R_1+(c2**3*(1+2*nu_v)+2*c2*r2*(1+nu_v))/R_2**3)* y_distance / r2
+    result[:,2] = - amplitude *(c1**2/R_1**3-2*nu_v/R_1+(-c2**2+2*R_2**2*nu_v)/R_2**3)
 
-        result = None
-        c1 = source_depth + pipe_delta
-        c2 = source_depth - pipe_delta
-        R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
-        R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
-        r2  = (x_distance**2 + y_distance**2)
-        if dim == 'x':
-            result = amplitude *((c1/R_1)**3-2*c1*(1+nu_v)/R_1+(c2**3*(1+2*nu_v)+2*c2*r2*(1+nu_v))/R_2**3)* x_distance / r2
-        elif dim == 'y':
-            result = amplitude *((c1/R_1)**3-2*c1*(1+nu_v)/R_1+(c2**3*(1+2*nu_v)+2*c2*r2*(1+nu_v))/R_2**3)* y_distance / r2
-        elif dim == 'z':
-            result = - amplitude *(c1**2/R_1**3-2*nu_v/R_1+(-c2**2+2*R_2**2*nu_v)/R_2**3)
-        else:
-            print("Did not understand dimension")
+    # if result_length == 1:
+    #     result = result.ravel()
 
-        results.append(result)
-    return results
+    return result
 
 
-def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_pipe_top):
+
+def rising_open_pipe(position_y, position_x, source_y, source_x, source_depth, amplitude, pipe_delta, latlon=True):
     '''
     Compute the surface deformation due to changes in a rising width amplitude open pipe source
 
@@ -265,41 +247,30 @@ def rising_open_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta,open_p
     @return list of resulting deformation for each point in xdata
     '''
     nu_v = .25
-    source_coords = (lat, lon)
 
-    results = []
-
-    for data in xdata:
-
-        dim = data[0]
-        station_coords = (float(data[1]),float(data[2]))
-        # print(station_coords)
-
-        y_distance = mo.wgs84_distance( source_coords, (station_coords[0], source_coords[1]) )
-        x_distance = mo.wgs84_distance( source_coords, (source_coords[0], station_coords[1]) )
-        x_distance = x_distance * np.sign(station_coords[1] - source_coords[1])
-        y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
-
-        result = None
-        c0 = open_pipe_top
-        c1 = source_depth + pipe_delta
-        R_0 = (x_distance**2 + y_distance**2 + c0**2)**(1/2)
-        R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
-        r2  = (x_distance**2 + y_distance**2)
-        if dim == 'x':
-            result = amplitude *(-(c0**2/R_0**3)+2*nu_v/R_0+(c1**2-2*(c1**2+r2)*nu_v)/R_1**3)* x_distance / c1
-        elif dim == 'y':
-            result = amplitude *(-(c0**2/R_0**3)+2*nu_v/R_0+(c1**2-2*(c1**2+r2)*nu_v)/R_1**3)* y_distance / c1
-        elif dim == 'z':
-            result = -amplitude *((c0**3/R_0**3)-c1**3/R_1**3+c1*(-1+2*nu_v)/R_1+c0*(1-2*nu_v)/R_0+(-1+2*nu_v)*np.log(c0+R_0)-(-1+2*nu_v)*np.log(c1+R_1))/ c1
-        else:
-            print("Did not understand dimension")
-
-        results.append(result)
-    return results
+    result_length = getLength(position_y, position_x)
+    result = np.zeros([result_length, 3])
 
 
-def sill(position_y, position_x, source_y, source_x, source_depth, amplitude):
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon=latlon)
+
+    c0 = source_depth - pipe_delta
+    c1 = source_depth + pipe_delta
+    R_0 = (x_distance**2 + y_distance**2 + c0**2)**(1/2)
+    R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
+    r2  = (x_distance**2 + y_distance**2)
+
+    result[:,0] = amplitude *(-(c0**2/R_0**3)+2*nu_v/R_0+(c1**2-2*(c1**2+r2)*nu_v)/R_1**3)* x_distance / c1
+    result[:,1] = amplitude *(-(c0**2/R_0**3)+2*nu_v/R_0+(c1**2-2*(c1**2+r2)*nu_v)/R_1**3)* y_distance / c1
+    result[:,2] = -amplitude *((c0**3/R_0**3)-c1**3/R_1**3+c1*(-1+2*nu_v)/R_1+c0*(1-2*nu_v)/R_0+(-1+2*nu_v)*np.log(c0+R_0)-(-1+2*nu_v)*np.log(c1+R_1))/ c1
+
+    # if result_length == 1:
+    #     result = result.ravel()
+
+    return result
+
+
+def sill(position_y, position_x, source_y, source_x, source_depth, amplitude, latlon=True):
     '''
     Compute the surface deformation due to changes in a sill-like source
 
@@ -315,7 +286,7 @@ def sill(position_y, position_x, source_y, source_x, source_depth, amplitude):
 
     @return list of resulting deformation for each point in xdata
     '''
-    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)    
+    y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)
 
     R5 = (x_distance**2 + y_distance**2 + source_depth**2)**(5/2)
 
@@ -400,3 +371,49 @@ def datetimeToNumber(in_time):
         return in_time.map(lambda t: time.mktime(t.timetuple()))
     else:
         return in_time
+
+
+
+def MogiVectors(mogi_res,station_lat_list,station_lon_list,flag3D=False):
+    '''
+    Creates a set of Mogi vectors for plotting
+
+    @param mogi_res: Magma source inversion results
+    @param station_lat_list: List of station latitudes
+    @param station_lon_list: List of station longitudes
+    @param flag3D: Flag for generating 3 dimensional vectors instead of only horizontal
+
+    @return x and y Mogi vectors scaled by pca amplitude change
+    '''
+    # grab the correct magma forward function
+    mag_source = SourceWrapper(globals()[mogi_res['source_type']])
+
+    mogi_x_disp = []
+    mogi_y_disp = []
+    for lat, lon in zip(station_lat_list, station_lon_list):
+        mogi_data = []
+
+        mogi_data.append( ('x', lat, lon) )
+        mogi_data.append( ('y', lat, lon) )
+        if flag3D:
+            mogi_data.append( ('z', lat, lon) )
+
+        if np.isnan(mogi_res['ex_params']).any()==True:
+            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
+                             mogi_res['depth'], mogi_res['amplitude'])
+        elif len(mogi_res['ex_params'])==1:
+            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
+                             mogi_res['depth'], mogi_res['amplitude'],mogi_res['ex_params'][0])
+        elif len(mogi_res['ex_params'])==2:
+            res = mag_source(mogi_data, mogi_res['lat'], mogi_res['lon'],
+                             mogi_res['depth'], mogi_res['amplitude'],mogi_res['ex_params'][0],mogi_res['ex_params'][1])
+
+        mogi_x_disp.append(res[0])
+        mogi_y_disp.append(res[1])
+
+    # the scaling here is because mogi distance vectors are in km
+    # the factor converts to mm and scales by the pca change
+    mogi_x_disp = np.array(mogi_x_disp) * 1e6 / (mogi_res['pca_amplitude'])
+    mogi_y_disp = np.array(mogi_y_disp) * 1e6 / (mogi_res['pca_amplitude'])
+
+    return mogi_x_disp, mogi_y_disp

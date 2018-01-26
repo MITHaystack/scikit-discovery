@@ -166,7 +166,7 @@ class GPSHPlotter(PipelineItem):
             if Mogi_name != None:
                 mogi_res = obj_data.getResults()[Mogi_name]
                 bmap.plot(mogi_res['lon'], mogi_res['lat'], "g^", markersize = 10, latlon=True)
-                mogi_x_disp, mogi_y_disp = mogi.MogiVectors(mogi_res,station_lat_list,station_lon_list)
+                mogi_x_disp, mogi_y_disp = pbo_tools.MogiVectors(mogi_res,station_lat_list,station_lon_list)
                 bmap.quiver(station_lon_list, station_lat_list, mogi_x_disp*dir_sign, mogi_y_disp*dir_sign,
                             latlon=True, scale=scaleFactor,color='red')
                             
