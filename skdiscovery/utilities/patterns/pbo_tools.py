@@ -168,8 +168,8 @@ def closed_pipe(xdata, lat, lon, source_depth, amplitude, pipe_delta):
         y_distance = y_distance * np.sign(station_coords[0] - source_coords[0])
 
         result = None
-        c1 = source_depth + pipe_delta
-        c2 = source_depth - pipe_delta
+        c1 = source_depth - pipe_delta
+        c2 = source_depth + pipe_delta
         R_1 = (x_distance**2 + y_distance**2 + c1**2)**(1/2)
         R_2 = (x_distance**2 + y_distance**2 + c2**2)**(1/2)
         r2  = (x_distance**2 + y_distance**2)
