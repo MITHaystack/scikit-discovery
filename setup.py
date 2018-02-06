@@ -6,7 +6,7 @@ package_name = 'scikit-discovery'
 package_list = find_packages()
 
 setup(name     = package_name,
-      version  = '0.9.9post3',
+      version  = '0.9.10',
       packages = package_list,
       zip_safe = False,
 
@@ -14,7 +14,7 @@ setup(name     = package_name,
           'astropy>=1.1.2',
           'basemap',
           'boto3>=1.4.4',
-          'dispy==4.8.1',
+          'dispy',
           'graphviz >= 0.7.0',
           'ipython >= 6.0.0',
           'ipywidgets >= 6.0.0',
