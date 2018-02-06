@@ -222,6 +222,11 @@ def setNumInstances(new_total_instances, instance_type, image_id):
 
 
 def update_ip_address(instance_info):
+    '''
+    Update ip address of instance info
+
+    @param instance_info: Information about amazon instance
+    '''
     try:
         information = ec2_client.describe_instances(InstanceIds=[instance_info['amazon_id']])[0]
 
@@ -232,6 +237,14 @@ def update_ip_address(instance_info):
 
 
 def good_connection(instance, port):
+    '''
+    Check if an amazon instance has a port open
+
+    @param instance: Amazon instance information
+    @param port: Port to check
+
+    @return Boolean indicating if a port is open
+    '''
     test_socket = socket.socket()
 
     success = False
