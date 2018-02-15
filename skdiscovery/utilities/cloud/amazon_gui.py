@@ -35,8 +35,8 @@ import skdiscovery.utilities.cloud.amazon_control as ac
 from skdiscovery.data_structure.framework import config
 
 widget_dict = OrderedDict()
-disable_list = ['initialize_button', 'cache_button', 'restore_button',
-                'new_num_instances_widget']
+disable_list = ['initialize_button', 'cache_button', 'restore_button']
+initialized_disabled_list = ['new_num_instances_widget', 'execute_instances_button']
 key_value_list = ['aws_id_widget', 'aws_secret_widget', 'aws_region_widget','aws_security_widget',
                   'aws_keyname_widget','aws_pem_widget','aws_image_id', 'instance_type_widget']
 
@@ -266,7 +266,7 @@ def drawGUI():
     # Need to disable after displaying in ipywidgets 7
     widget_dict['execute_instances_button'].disabled=True
     widget_dict['execute_instances_button'].button_style=''
-
+    widget_dict['new_num_instances_widget'].disabled=True
 
 
 def changeButtonState(enabled=True):
@@ -289,8 +289,9 @@ def changeButtonState(enabled=True):
         widget_dict[label].button_style = button_style
 
     if initialized:
-        widget_dict['execute_instances_button'].disabled = new_disabled
-        widget_dict['execute_instances_button'].button_style = button_style
+        for label in initialized_disabled_list:
+            widget_dict[label].disabled = new_disabled
+            widget_dict[label].button_style = button_style
 
         
 def checkValidValues():
