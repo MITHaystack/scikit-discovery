@@ -139,7 +139,7 @@ def startDispyScheduler():
     
     args = ['dispyscheduler.py', '--node_secret', dispy_pass, '--ip_addr',
             '127.0.0.1', '--cluster_secret', dispy_pass, '--pulse_interval',
-            '60','--msg_timeout', '60', '--httpd', '-p', '61234']
+            '60','--msg_timeout', '60', '--httpd', '-p', '61234', '--daemon']
 
     for info in amazon_list:
         args.append('-n')
