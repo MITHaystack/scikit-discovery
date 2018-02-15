@@ -221,22 +221,22 @@ def setNumInstances(new_total_instances, instance_type, image_id):
         startDispyScheduler()
 
 
-def update_ip_address(instance_info):
+def UpdateIPAddress(instance_info):
     '''
     Update ip address of instance info
 
     @param instance_info: Information about amazon instance
     '''
     try:
-        information = ec2_client.describe_instances(InstanceIds=[instance_info['amazon_id']])[0]
+        information = ec2_client.describe_instances(InstanceIds=[instance_info['amazon_id']])
 
-        if 'PublicIpAddress' in information:
-            instance_info['ip_address'] = informaiton['PublicIpAddress']
+        instance_info['ip_address'] = information['Reservations'][0]['Instances'][0]['PublicIpAddress']
+
     except KeyError:
         pass
 
 
-def good_connection(instance, port):
+def goodConnection(instance, port):
     '''
     Check if an amazon instance has a port open
 
@@ -251,7 +251,7 @@ def good_connection(instance, port):
 
     try:
         if instance['ip_address'] == None:
-            update_ip_address(instance)
+            UpdateIPAddress(instance)
 
 
         if instance['ip_address'] != None:
@@ -271,12 +271,11 @@ def good_connection(instance, port):
 def createTunnels():
     ''' Create reverse ssh tunnels to all instances '''
 
-
     while len([i for i in amazon_list if i['tunnel'] == None]) > 0:
         time.sleep(5)
         for instance in amazon_list:
             if instance['tunnel'] == None and instance['state'] == 'running' \
-               and good_connection(instance, 22):
+               and goodConnection(instance, 22):
 
                 try:
                     instance['tunnel'] = \
@@ -313,7 +312,7 @@ def startDispyNode():
 
     index = 0
     while index < len(amazon_list):
-        if good_connection(amazon_list[index], 51348):
+        if goodConnection(amazon_list[index], 51348):
             index += 1
 
         else:
