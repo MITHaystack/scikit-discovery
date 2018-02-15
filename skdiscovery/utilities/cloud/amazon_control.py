@@ -221,7 +221,7 @@ def setNumInstances(new_total_instances, instance_type, image_id):
         startDispyScheduler()
 
 
-def UpdateIPAddress(instance_info):
+def updateIPAddress(instance_info):
     '''
     Update ip address of instance info
 
@@ -251,7 +251,7 @@ def goodConnection(instance, port):
 
     try:
         if instance['ip_address'] == None:
-            UpdateIPAddress(instance)
+            updateIPAddress(instance)
 
 
         if instance['ip_address'] != None:
