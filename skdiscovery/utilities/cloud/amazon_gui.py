@@ -35,10 +35,12 @@ import skdiscovery.utilities.cloud.amazon_control as ac
 from skdiscovery.data_structure.framework import config
 
 widget_dict = OrderedDict()
-disable_list = ['execute_instances_button', 'initialize_button', 'cache_button', 'restore_button',
+disable_list = ['initialize_button', 'cache_button', 'restore_button',
                 'new_num_instances_widget']
 key_value_list = ['aws_id_widget', 'aws_secret_widget', 'aws_region_widget','aws_security_widget',
                   'aws_keyname_widget','aws_pem_widget','aws_image_id', 'instance_type_widget']
+
+initialized=False
 
 
 # Creates a GUI for setting up the Amazon instances when offloading pipelines.
@@ -166,6 +168,9 @@ def init():
 
         @param b: Button that was clicked button
         '''
+
+        global initialized
+
         changeButtonState(enabled=False)
         widget_dict['aws_status_widget'].value = 'Initializing'
 
@@ -183,6 +188,8 @@ def init():
             widget_dict['new_num_instances_widget'].disabled = False
             widget_dict['initialize_button'].description = 'Re-Initialize'
             widget_dict['new_num_instances_widget'].value = len(ac.amazon_list)
+
+            initialized=True
 
         changeButtonState(enabled=True)
 
@@ -280,6 +287,10 @@ def changeButtonState(enabled=True):
     for label in disable_list:
         widget_dict[label].disabled = new_disabled
         widget_dict[label].button_style = button_style
+
+    if initialized:
+        widget_dict['execute_instances_button'].disabled = new_disabled
+        widget_dict['execute_instances_button'].button_style = button_style
 
         
 def checkValidValues():
