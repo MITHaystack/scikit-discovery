@@ -160,8 +160,12 @@ class DiscoveryPipeline:
         # Run the job on the local machine
         else:
 
-            shared_manager = Manager()
-            shared_lock = shared_manager.Lock()
+            if num_runs != 1 and num_cores != 0 and self.data_fetcher.multirun_enabled() == False:
+                shared_manager = Manager()
+                shared_lock = shared_manager.Lock()
+            else:
+                shared_manager = None
+                shared_lock = None
 
             # Function to generate inputs for running
             def generatePipelineInputs():
