@@ -107,7 +107,7 @@ def find_match(region_index, region_list):
 
 
 def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, full_sphere = False, 
-                         max_v=.3, min_v=-0.3, cmap = matplotlib.cm.get_cmap('jet')):
+                         max_v=.3, min_v=-0.3, cmap = matplotlib.cm.get_cmap('jet'), test_point = None):
     '''
     Perform a Spherical Voronoi Tessellation on the input data.
 
@@ -126,13 +126,19 @@ def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, f
     @param max_v: Specify a maximum value to use when assigning values to the tessellation
     @param min_v: Specify a minimum value to use when assigning values to the tessellation
     @param cmap: Matplotlib color map to use
+    @param test_point: Tuple containing the latitude and longitude of the ficitonal point to used to remove polygons that
+                       wrap around the earth. If none, a point is automatically chosen
 
     @return Matplotlib patch collection of tessellation, scipy.spatial.SphericalVoronoi object, integer index of objects in patch collection.
     '''
     if full_sphere == False:
-        test_lat = -1*np.mean(data[lat_name])
-        test_lon = np.mean(data[lon_name]) + 180
-    
+        if test_point == None:
+            test_lat = -1*np.mean(data[lat_name])
+            test_lon = np.mean(data[lon_name]) + 180
+
+        else:
+            test_lat = test_point[0]
+            test_lon = test_point[1]
     
         full_data = data
         full_data = pd.concat([full_data, pd.DataFrame({lat_name: test_lat, lon_name: test_lon}, 
