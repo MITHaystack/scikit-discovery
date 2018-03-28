@@ -173,3 +173,7 @@ def medianFilter(data, window, interpolate=True):
                                                                      data.index < index+window/2)])
 
     return result
+
+def normalize(in_data):
+    in_data = (in_data - np.mean(in_data))
+    return in_data / np.std(in_data, ddof=1)
