@@ -3,8 +3,8 @@
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for
-# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
-# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface
 # Deformation Phenomena" (PI: V. Pankratius)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -13,7 +13,7 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -31,11 +31,18 @@ class DataAccumulator(PipelineItem):
     '''
     Stores a copy of the data in its current state in the pipeline
     '''
-    
+
+    def __init__(self, str_description, save_wrapper=False):
+        self._save_wrapper = save_wrapper
+        super(DataAccumulator, self).__init__(str_description)
+
     def process(self, obj_data):
-        ''' 
+        '''
         Store a copy of the data in the object wrapper results
 
         @param obj_data: Data Wrapper to be copied
         '''
-        obj_data.addResult(self.str_description, copy.deepcopy(obj_data.get()))
+        if self._save_wrapper:
+            obj_data.addResult(self.str_description, copy.deepcopy(obj_data))
+        else:
+            obj_data.addResult(self.str_description, copy.deepcopy(obj_data.get()))
