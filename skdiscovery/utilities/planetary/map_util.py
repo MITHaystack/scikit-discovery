@@ -428,6 +428,28 @@ def global_coords(x_in,y_in,coeffs):
     y = y_in + 0.5
     return (coeffs[0] + coeffs[1]*x + coeffs[2]*y, coeffs[3] + coeffs[4]*x + coeffs[5]*y)
 
+class GlobalCoords(object):
+
+    def __init__(self, aff_coeffs, center_pixels=True):
+
+        self._aff_coeffs = aff_coeffs
+
+        if center_pixels:
+            self._x_offset = 0.5
+            self._y_offset = 0.5
+
+        else:
+            self._x_offset = 0.0
+            self._y_offset = 0.0
+
+
+    def __call__(self, y_in, x_in):
+        y = y_in + self._y_offset
+        x = x_in + self._x_offset
+        return (self._aff_coeffs[3] + self._aff_coeffs[4]*x + self._aff_coeffs[5]*y,
+                self._aff_coeffs[0] + self._aff_coeffs[1]*x + self._aff_coeffs[2]*y)
+
+
 
 def gps_to_pixel(gpsmethod, gps_coord, bounds):
     """
