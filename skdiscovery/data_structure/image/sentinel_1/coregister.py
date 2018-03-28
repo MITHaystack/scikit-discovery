@@ -74,16 +74,18 @@ class Coregister(PipelineItem):
                     else:
                         continue
 
+                    burst = burst[line_slice, sample_slice]
+                    deramp = -ramp(lines[line_slice, sample_slice], samples[line_slice,sample_slice], index)
 
-                    shift = ird.translation(np.abs(master_burst_list[index][line_slice, sample_slice]),
-                                                   np.abs(burst[line_slice, sample_slice]))
+                    for i in range(self._num_iterations):
 
-                    transform_matrix = np.array([[1, 0, shift['tvec'][1]],
-                                                 [0, 1, shift['tvec'][0]]])
+                        shift = ird.translation(np.abs(master_burst_list[index][line_slice, sample_slice]),
+                                                np.abs(burst))
 
-                    shifted_data = transformSLC(burst[line_slice, sample_slice],
-                                                 -ramp(lines[line_slice, sample_slice], samples[line_slice,sample_slice], index),
-                                                 transform_matrix)
+                        transform_matrix = np.array([[1, 0, shift['tvec'][1]],
+                                                     [0, 1, shift['tvec'][0]]])
+
+                        burst, deramp = transformSLC(burst, deramp, transform_matrix)
 
                     if line_slice.start == None:
                         line_start = 0
@@ -97,4 +99,4 @@ class Coregister(PipelineItem):
 
                     full_data_slice = slice(lines_per_burst*index + line_start, lines_per_burst*(index) + line_end)
 
-                    data[full_data_slice,sample_slice] = shifted_data
+                    data[full_data_slice,sample_slice] = burst
