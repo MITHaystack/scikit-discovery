@@ -99,7 +99,7 @@ class DiscoveryPipeline:
         self.__cluster = None
         self._dispy_http = None        
 
-    def run(self, num_runs=1, perturb_data = False, num_cores = 1, amazon=False, verbose=False):
+    def run(self, num_runs=1, perturb = 'pipeline', num_cores = 1, amazon=False, verbose=False):
         '''
         Run the pipeline
 
@@ -112,6 +112,8 @@ class DiscoveryPipeline:
         @param amazon: Offload the pipeline on amazon
         @param verbose: Display the pipeline for each run
         '''
+
+        perturb = perturb.lower()
 
 
         # Run the job on Amazon
@@ -140,11 +142,10 @@ class DiscoveryPipeline:
                 self.stageConfigurationHistory.append(self.getMetadata())
 
                 if num_runs > 1:
-                    if perturb_data == False:
+                    if perturb in ('pipeline', 'both'):
                         self.perturb()
-                    else:
+                    if perturb in ('data', 'both'):
                         self.perturbData()
-
 
             for job in jobs:
                 results = job()
@@ -175,9 +176,9 @@ class DiscoveryPipeline:
                 yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
 
                 for i in range(1, num_runs):
-                    if perturb_data == False:
+                    if perturb in ('pipeline', 'both'):
                         self.perturb()
-                    else:
+                    if perturb in ('data', 'both'):
                         self.perturbData()
 
                     self.stageConfigurationHistory.append(self.getMetadata()) 
@@ -187,9 +188,9 @@ class DiscoveryPipeline:
 
                 # If running multiple times, perturb the pipeline or the data
                 if num_runs > 1:
-                    if perturb_data == False:
+                    if perturb in ('pipeline', 'both'):
                         self.perturb()
-                    else:
+                    if perturb in ('data', 'both'):
                         self.perturbData()
                     
             # Run the jobs
