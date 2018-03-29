@@ -70,6 +70,12 @@ def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, 
 
     return data_container.getResults()
 
+
+def _setupNode():
+    from multiprocessing import Lock
+    global shared_lock
+    lock = Lock()
+
 def _wrap_cluster(args):
     '''
     Wrap cluster run
