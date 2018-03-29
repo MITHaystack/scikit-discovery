@@ -41,12 +41,14 @@ import numpy as np
 
 class Coregister(PipelineItem):
 
-    def __init__(self, str_description, image_limits = None, num_iterations=3):
+    def __init__(self, str_description, ap_paramList, image_limits = None, num_iterations=3):
         self._image_limits = image_limits
         self._num_iterations = num_iterations
-        super(Coregister, self).__init__(str_description)
+        super(Coregister, self).__init__(str_description, ap_paramList)
 
     def process(self, obj_data):
+
+        reg_type = self.ap_paramList[0]()
 
         master_burst_list = None
         for label, data in obj_data.getIterator():
@@ -74,18 +76,35 @@ class Coregister(PipelineItem):
                     else:
                         continue
 
+                    master_burst = master_burst_list[index][line_slice, sample_slice]
+
                     burst = burst[line_slice, sample_slice]
                     deramp = -ramp(lines[line_slice, sample_slice], samples[line_slice,sample_slice], index)
 
-                    for i in range(self._num_iterations):
 
-                        shift = ird.translation(np.abs(master_burst_list[index][line_slice, sample_slice]),
-                                                np.abs(burst))
+                    if reg_type == 'imreg_translation':
 
-                        transform_matrix = np.array([[1, 0, shift['tvec'][1]],
-                                                     [0, 1, shift['tvec'][0]]])
+                        for i in range(self._num_iterations):
 
-                        burst, deramp = transformSLC(burst, deramp, transform_matrix)
+                            shift = ird.translation(np.abs(master_burst),
+                                                    np.abs(burst))
+
+                            transform_matrix = np.array([[1, 0, shift['tvec'][1]],
+                                                         [0, 1, shift['tvec'][0]]])
+
+                            burst, deramp = transformSLC(burst, deramp, transform_matrix)
+
+                    elif reg_type == 'imreg_affine':
+
+                        shift = ird.similarity(np.abs(master_burst), np.abs(burst), numiter=self._num_iterations)
+
+                        im_angle = np.deg2rad(shift['angle'])
+                        im_scale = shift['scale']
+                        im_tl = shift['tvec']
+
+                        transform_matrix = np.array([[im_scale*np.cos(im_angle), -im_scale*np.sin(im_angle), im_tl[1]],
+                                                     [im_scale*np.sin(im_angle), im_scale*np.cos(im_angle), im_tl[0]]], dtype=np.float32)
+                        burst = transformSLC(burst, deramp, transform_matrix)[0]
 
                     if line_slice.start == None:
                         line_start = 0
