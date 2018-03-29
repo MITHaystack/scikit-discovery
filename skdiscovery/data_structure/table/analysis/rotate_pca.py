@@ -28,6 +28,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import brute
+from fastdtw import fastdtw
 
 # scikit discovery imports
 from skdiscovery.data_structure.framework import PipelineItem
@@ -57,21 +58,26 @@ class RotatePCA(PipelineItem):
 
         return rot @ row_vector
 
+    def _rollFastDTW(self, data, test_model):
+        tiled_model = self._tileModel(test_model, len(data))
 
-    def _shape_fitness(self, z, data):
+        centered_data = normalize(data)
+
+        centered_tiled_model = normalize(tiled_model)
+
+        # return [fastdtw(centered_data, np.roll(centered_tiled_model, i))[0] for i in range(len(test_model))]
+
+        return np.min([fastdtw(centered_data, np.roll(centered_tiled_model, i))[0] for i in range(len(test_model))])
+
+    def _tileModel(self, in_model, new_size):
+        num_models = int(np.ceil(new_size / len(in_model)))
+        return np.tile(in_model, num_models)[:new_size]
+
+
+    def _fitnessDTW(self, z, data, model):
         az, ay, ax = z
         new_data = self._rotate(data.as_matrix().T, az, ay, ax)
-
-        normalized_pc1 = normalize(new_data[0,:])
-        normalized_pc2 = normalize(new_data[1,:])
-        normalized_pc3 = normalize(new_data[2,:])
-
-        #linear_removed = tt.getTrend(new_data['PC1'].asfreq('D'))[0]
-        #annual_removed = tt.sinuFits(new_data['PC2'].asfreq('D'), 1, 1)
-
-        return np.std(np.correlate(normalized_pc1, self._model),ddof=1) + np.std(np.correlate(normalized_pc2, self._model),ddof=1) - \
-               np.std(np.correlate(normalized_pc3, self._model),ddof=1)
-
+        return self._rollFastDTW(new_data[2,:], model)
 
     def process(self, obj_data):
         pca_results = obj_data.getResults()[self._pca_name]
@@ -83,15 +89,15 @@ class RotatePCA(PipelineItem):
 
 
         end_point = 360 - (360/self._resolution)
-        new_angles = brute(self._shape_fitness,
+        new_angles = brute(self._fitnessDTW,
                            ranges = ((0, np.deg2rad(end_point)),
                                      (0, np.deg2rad(end_point)),
                                      (0, np.deg2rad(end_point))),
                            Ns=self._resolution,
-                           args=(pca,))
+                           args=(pca,self._model))
 
 
-        final_score = self._shape_fitness(new_angles, pca)
+        final_score = self._fitnessDTW(new_angles, pca, self._model)
 
 
         rotated_pcs = pd.DataFrame(self._rotate(pca.T, *new_angles).T, index=pca.index, columns = pca.columns)
