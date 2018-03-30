@@ -435,14 +435,6 @@ class DiscoveryPipeline:
                                                 scheduler_node='127.0.0.1',
                                                 ip_addr='127.0.0.1', setup=_setupNode)
 
-        # for i in range(1000):
-        #     try:
-        #         self._dispy_http = DispyHTTPServer(self.__cluster,port = 8181 + i)
-        #         self._dispy_http.port = 8181 + i
-        #         break
-        #     except OSError:
-        #         pass
-
             
     def _createDispyLink(self):
         ''' Create a link to the Dispy Cluster Information website '''
