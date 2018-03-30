@@ -420,17 +420,7 @@ class DiscoveryPipeline:
             import time
             if data_fetcher.multirun_enabled() == False:
                 with amazon_lock:
-
-                    tmp_id = str(run_id).zfill(4) + ': '
-                    tmp_file_name = '/tmp/scikit_data_access_qf8sa97.txt'
-                    with open(tmp_file_name, 'a') as tmpfile:
-                        tmpfile.write(tmp_id + 'Starting to retrieving data from data fetcher\n')
-                    time.sleep(5)
-
                     data_container = data_fetcher.output()
-
-                    with open(tmp_file_name, 'a') as tmpfile:
-                        tmpfile.write(tmp_id + 'Finished retrieving data from data fetcher\n\n')
 
             else:
                 data_container = data_fetcher.output()
