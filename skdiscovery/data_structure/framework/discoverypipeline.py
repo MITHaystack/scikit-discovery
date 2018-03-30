@@ -73,8 +73,10 @@ def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, 
 
 def _setupNode():
     from multiprocessing import Lock
-    global shared_lock
-    lock = Lock()
+    global amazon_lock
+    amazon_lock = Lock()
+
+    return 0
 
 def _wrap_cluster(args):
     '''
@@ -414,10 +416,24 @@ class DiscoveryPipeline:
         
         # Amazon run function
         def amazon_run(data_fetcher, stage_containers, run_id=-1):
-            global shared_lock
+            global amazon_lock
+            import time
             if data_fetcher.multirun_enabled() == False:
-                with shared_lock:
+                with amazon_lock:
+
+                    tmp_id = str(run_id).zfill(4) + ': '
+                    tmp_file_name = '/tmp/scikit_data_access_qf8sa97.txt'
+                    with open(tmp_file_name, 'a') as tmpfile:
+                        tmpfile.write(tmp_id + 'Starting to retrieving data from data fetcher\n')
+                    time.sleep(5)
+
                     data_container = data_fetcher.output()
+
+                    with open(tmp_file_name, 'a') as tmpfile:
+                        tmpfile.write(tmp_id + 'Finished retrieving data from data fetcher\n\n')
+
+            else:
+                data_container = data_fetcher.output()
 
             data_container.run_id = run_id
             for s in stage_containers:
