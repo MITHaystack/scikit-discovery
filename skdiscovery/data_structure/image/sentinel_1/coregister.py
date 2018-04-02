@@ -32,6 +32,7 @@ from skdiscovery.data_structure.framework.base import PipelineItem
 
 # pyinsar imports
 from pyinsar.processing.instruments.sentinel import SentinelRamp, selectValidLines, transformSLC
+from pyinsar.processing.utilities.generic import keypointsAlign, scaleImage
 
 
 # 3rd party imports
@@ -105,6 +106,11 @@ class Coregister(PipelineItem):
                         transform_matrix = np.array([[im_scale*np.cos(im_angle), -im_scale*np.sin(im_angle), im_tl[1]],
                                                      [im_scale*np.sin(im_angle), im_scale*np.cos(im_angle), im_tl[0]]], dtype=np.float32)
                         burst = transformSLC(burst, deramp, transform_matrix)[0]
+
+                    elif reg_type == 'keypoints':
+                        transform_matrix = keypointsAlign(scaleImage(np.abs(master_burst)), scaleImage(np.abs(burst)))
+                        burst = transformSLC(burst, deramp, transform_matrix)[0]
+
 
                     if line_slice.start == None:
                         line_start = 0
