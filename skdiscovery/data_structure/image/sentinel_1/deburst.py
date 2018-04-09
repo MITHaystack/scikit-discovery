@@ -35,7 +35,7 @@ from skdaccess.utilities.support import progress_bar
 from skdaccess.utilities.image_util import SplineLatLon
 
 # Pyinsar imports
-from pyinsar.processing.instruments.sentinel import retrieveAzimuthTime, readGeoLocation
+from pyinsar.processing.instruments.sentinel import retrieve_azimuth_time, read_geolocation, update_geolocation_lines
 
 # 3rd party imports
 from scipy.interpolate import SmoothBivariateSpline
@@ -61,7 +61,7 @@ class Deburst(PipelineItem):
 
             tree = obj_data.info(label)['Tree']
 
-            azimuth_time, line_index, split_indicies = retrieveAzimuthTime(tree)
+            azimuth_time, line_index, split_indicies = retrieve_azimuth_time(tree)
 
             if self._cut_on_master and index==0:
                 master_azimuth_time = azimuth_time
@@ -76,14 +76,15 @@ class Deburst(PipelineItem):
             obj_data.info(label)['Line Index'] = line_index
 
 
-            geo_info = readGeoLocation(tree.find('geolocationGrid/geolocationGridPointList'), azimuth_time[line_index])
+            geo_info = read_geolocation(tree)
 
+            updated_lines = update_geolocation_lines(tree, azimuth_time[line_index], geo_info)
 
-            lat_spline = SmoothBivariateSpline(geo_info['Lines'],
+            lat_spline = SmoothBivariateSpline(updated_lines,
                                                geo_info['Samples'],
                                                geo_info['Latitude'],kx=1, ky=1)
 
-            lon_spline = SmoothBivariateSpline(geo_info['Lines'],
+            lon_spline = SmoothBivariateSpline(updated_lines,
                                                geo_info['Samples'],
                                                geo_info['Longitude'], kx=1,ky=1)
 
