@@ -31,8 +31,8 @@ from collections import OrderedDict
 from skdiscovery.data_structure.framework.base import PipelineItem
 
 # pyinsar imports
-from pyinsar.processing.instruments.sentinel import SentinelRamp, selectValidLines, transformSLC
-from pyinsar.processing.utilities.generic import keypointsAlign, scaleImage
+from pyinsar.processing.instruments.sentinel import SentinelRamp, get_valid_lines, select_valid_lines, transform_slc, retrieve_azimuth_time
+from pyinsar.processing.utilities.generic import keypoints_align, scale_image
 
 
 # 3rd party imports
@@ -54,25 +54,50 @@ class Coregister(PipelineItem):
         master_burst_list = None
         for label, data in obj_data.getIterator():
             if master_burst_list == None:
-
-                master_burst_list = selectValidLines(data, obj_data.info(label)['Tree'], cut=False)
+                master_burst_list = select_valid_lines(data, obj_data.info(label)['Tree'], cut=False)
+                master_valid_lines = get_valid_lines(obj_data.info(label)['Tree'], per_burst=True)
             else:
 
-                burst_list = selectValidLines(data, obj_data.info(label)['Tree'], cut=False)
+                burst_valid_lines = get_valid_lines(obj_data.info(label)['Tree'], per_burst=True)
+                valid_lines = [np.logical_and(master_lines, burst_lines)
+                               for master_lines, burst_lines in
+                               zip(master_valid_lines, burst_valid_lines)]
+
+                burst_list = select_valid_lines(data, obj_data.info(label)['Tree'], cut=False)
                 lines_per_burst = int(obj_data.info(label)['Tree'].find('swathTiming/linesPerBurst').text)
                 samples_per_burst = int(obj_data.info(label)['Tree'].find('swathTiming/samplesPerBurst').text)
                 lines, samples = np.meshgrid(np.arange(lines_per_burst), np.arange(samples_per_burst), indexing = 'ij')
                 ramp = SentinelRamp(obj_data.info(label))
 
-                for index, burst in enumerate(burst_list):
+                for index, (burst_lines, burst) in enumerate(zip(valid_lines, burst_list)):
+
+                    start_valid_line = np.argmax(burst_lines)
+                    end_valid_line = lines_per_burst - np.argmax(burst_lines[::-1])
 
                     if self._image_limits == None:
-                        line_slice = slice(0, lines_per_burst)
+                        line_slice = slice(start_valid_line, end_valid_line)
                         sample_slice = slice(0, samples_per_burst)
 
                     elif self._image_limits[index] != None:
                         line_slice = self._image_limits[index][0]
                         sample_slice = self._image_limits[index][1]
+
+                        if line_slice.start == None or \
+                           line_slice.start < start_valid_line:
+                            line_slice_start = start_valid_line
+
+                        else:
+                            line_slice_start = line_slice.start
+
+                        if line_slice.stop == None or \
+                           line_slice.stop > end_valid_line:
+                            line_slice_stop = end_valid_line
+
+                        else:
+                            line_slice_stop = line_slice.stop
+
+                        line_slice = slice(line_slice_start, line_slice_stop)
+
 
                     else:
                         continue
@@ -93,7 +118,7 @@ class Coregister(PipelineItem):
                             transform_matrix = np.array([[1, 0, shift['tvec'][1]],
                                                          [0, 1, shift['tvec'][0]]])
 
-                            burst, deramp = transformSLC(burst, deramp, transform_matrix)
+                            burst, deramp = transform_slc(burst, deramp, transform_matrix)
 
                     elif reg_type == 'imreg_affine':
 
@@ -105,22 +130,29 @@ class Coregister(PipelineItem):
 
                         transform_matrix = np.array([[im_scale*np.cos(im_angle), -im_scale*np.sin(im_angle), im_tl[1]],
                                                      [im_scale*np.sin(im_angle), im_scale*np.cos(im_angle), im_tl[0]]], dtype=np.float32)
-                        burst = transformSLC(burst, deramp, transform_matrix)[0]
+                        burst = transform_slc(burst, deramp, transform_matrix)[0]
+
+                        if index != 0:
+                            pass
 
                     elif reg_type == 'keypoints':
-                        transform_matrix = keypointsAlign(scaleImage(np.abs(master_burst)), scaleImage(np.abs(burst)))
-                        burst = transformSLC(burst, deramp, transform_matrix)[0]
+                        transform_matrix = keypoints_align(scale_image(np.abs(master_burst)), scale_image(np.abs(burst)))
+                        burst = transform_slc(burst, deramp, transform_matrix)[0]
 
 
                     if line_slice.start == None:
                         line_start = 0
                     elif line_slice.start < 0:
                         line_start = lines_per_burst + line_slice.start
+                    else:
+                        line_start = line_slice.start
 
                     if line_slice.stop == None:
                         line_end = lines_per_burst
                     elif line_slice.stop < 0:
                         line_end = lines_per_burst + line_slice.stop
+                    else:
+                        line_end = line_slice.stop
 
                     full_data_slice = slice(lines_per_burst*index + line_start, lines_per_burst*(index) + line_end)
 
