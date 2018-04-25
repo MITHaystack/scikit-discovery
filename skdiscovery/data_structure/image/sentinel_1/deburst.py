@@ -82,11 +82,11 @@ class Deburst(PipelineItem):
 
             lat_spline = SmoothBivariateSpline(updated_lines,
                                                geo_info['Samples'],
-                                               geo_info['Latitude'],kx=1, ky=1)
+                                               geo_info['Latitudes'], kx=1, ky=1)
 
             lon_spline = SmoothBivariateSpline(updated_lines,
                                                geo_info['Samples'],
-                                               geo_info['Longitude'], kx=1,ky=1)
+                                               geo_info['Longitudes'], kx=1, ky=1)
 
 
             obj_data.info(label)['Geolocation'] = SplineLatLon(lat_spline, lon_spline)
