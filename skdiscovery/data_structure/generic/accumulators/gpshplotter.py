@@ -105,7 +105,7 @@ class GPSHPlotter(PipelineItem):
         parallels = np.arange(np.round(lat_range[0]-offset,decimals=1),np.round(lat_range[1]+offset,decimals=1),.1)
         meridians = np.arange(np.round(lon_range[0]-offset,decimals=1),np.round(lon_range[1]+offset,decimals=1),.1)
 
-        bmap.drawmeridians(meridians, labels=[0,0,0,1],fontsize=14)
+        bmap.drawmeridians(meridians, labels=[0,0,0,1],fontsize=14, rotation=90)
         bmap.drawparallels(parallels, labels=[1,0,0,0],fontsize=14)
 
         
