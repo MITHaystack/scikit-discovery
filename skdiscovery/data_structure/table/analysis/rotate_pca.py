@@ -32,7 +32,7 @@ from fastdtw import fastdtw
 
 # scikit discovery imports
 from skdiscovery.data_structure.framework import PipelineItem
-from skdiscovery.utilities.patterns.trend_tools import normalize
+from skdiscovery.utilities.patterns import trend_tools as tt
 
 # Standard library imports
 from collections import OrderedDict
@@ -40,12 +40,22 @@ from collections import OrderedDict
 
 class RotatePCA(PipelineItem):
 
-    def __init__(self, str_description, pca_name, model, resolution = 20):
+    def __init__(self, str_description, ap_paramList, pca_name, model, norm=None, num_components=3):
+        '''
 
+        @param ap_paramList[fit_type]: Fitness test to use (either 'dtw' or 'remove')
+        @param ap_paramList[resolution]: Fitting resolution when using brute force
+
+        '''
         self._pca_name = pca_name
-        self._model = normalize(model)
-        self._resolution = resolution
-        super(RotatePCA, self).__init__(str_description)
+        self._model = tt.normalize(model)
+        self.norm = norm
+
+        if num_components not in (3,4):
+            raise NotImplementedError('Only 3 or 4 components implemented')
+
+        self.num_components = num_components
+        super(RotatePCA, self).__init__(str_description, ap_paramList)
 
 
 
@@ -58,28 +68,115 @@ class RotatePCA(PipelineItem):
 
         return rot @ row_vector
 
-    def _rollFastDTW(self, data, test_model):
-        tiled_model = self._tileModel(test_model, len(data))
+    def _rotate4d(self, row_vector, rot_angles):
 
-        centered_data = normalize(data)
+        index_list = []
+        index_list.append([0,1])
+        index_list.append([1,2])
+        index_list.append([0,2])
+        index_list.append([0,3])
+        index_list.append([1,3])
+        index_list.append([2,3])
 
-        centered_tiled_model = normalize(tiled_model)
+        # Two different types:
+        # left sine is negative: Type 0
+        # right sine is negative: Type 1
+        type_list = [0, 0, 1, 0, 1, 1]
 
-        # return [fastdtw(centered_data, np.roll(centered_tiled_model, i))[0] for i in range(len(test_model))]
+        rotation_dict = OrderedDict()
 
-        return np.min([fastdtw(centered_data, np.roll(centered_tiled_model, i))[0] for i in range(len(test_model))])
+        # The order of the rotation matrix is as follows:
+        # (see https://hollasch.github.io/ray4/Four-Space_Visualization_of_4D_Objects.html#s2.2)
+        label_list = ['xy', 'yz', 'zx', 'xw', 'yw', 'zw']
+        for angle, label, index, negative_type in zip(rot_angles, label_list, index_list, type_list):
+            ct = np.cos(angle)
+            st = np.sin(angle)
+
+            rotation_matrix = np.eye(4)
+            rotation_matrix[index[0], index[0]] = ct
+            rotation_matrix[index[1], index[1]] = ct
+            rotation_matrix[index[0], index[1]] = st
+            rotation_matrix[index[1], index[0]] = st
+
+            if negative_type == 0:
+                rotation_matrix[index[1], index[0]] *= -1
+            elif negative_type == 1:
+                rotation_matrix[index[0], index[1]] *= -1
+            else:
+                raise RuntimeError('Invalid value of negative_type')
+
+            rotation_dict[label]=rotation_matrix
+
+
+        rot_matrix = np.eye(4)
+        for label, matrix in rotation_dict.items():
+            rot_matrix = rot_matrix @ matrix
+
+        return rot_matrix @ row_vector
+
+
+    def _rollFastDTW(self, data, centered_tiled_model, model_size):
+        centered_data = tt.normalize(data)
+
+        fitness_values = [fastdtw(centered_data, np.roll(centered_tiled_model, i), dist=self.norm)[0] for i in range(model_size)]
+        min_index = np.argmin(fitness_values)
+
+        return min_index, fitness_values[min_index]
+
 
     def _tileModel(self, in_model, new_size):
         num_models = int(np.ceil(new_size / len(in_model)))
         return np.tile(in_model, num_models)[:new_size]
 
+    def _fitness(self, z, data, model, fit_type = 'dtw', num_components=3):
+        if num_components == 3:
+            new_data = self._rotate(data.as_matrix().T, *z)
+        elif num_components == 4:
+            new_data = self._rotate4d(data.as_matrix().T, z)
 
-    def _fitnessDTW(self, z, data, model):
-        az, ay, ax = z
-        new_data = self._rotate(data.as_matrix().T, az, ay, ax)
-        return self._rollFastDTW(new_data[2,:], model)
+
+        if fit_type == 'dtw':
+            return self._fitnessDTW(new_data, model, num_components)
+        elif fit_type == 'remove' and num_components == 3:
+            return self._fitnessRemove(pd.DataFrame(new_data.T, columns=['PC1','PC2','PC3'],
+                                                    index=data.index),
+                                       model)
+        elif fit_type == 'remove':
+            raise NotImplementedError("The 'remove' fitness type only works with 3 components")
+        else:
+            raise NotImplementedError('Only "dtw" and "remove" fitness types implemented')
+
+
+    def _fitnessDTW(self, new_data, model, num_components=3):
+
+        tiled_model = tt.normalize(self._tileModel(model, new_data.shape[1]))
+
+        roll, primary_results = self._rollFastDTW(new_data[num_components-1,:], tiled_model, len(model))
+
+        # pc1_results = np.min([fastdtw(tt.normalize(new_data[0,:]), np.roll(tiled_model, roll))[0],
+        #                       fastdtw(-tt.normalize(-new_data[0,:]), np.roll(tiled_model, roll))[0]])
+
+        # pc2_results = np.min([fastdtw(tt.normalize(new_data[1,:]), np.roll(tiled_model, roll))[0],
+        #                       fastdtw(tt.normalize(-new_data[1,:]), np.roll(tiled_model, roll))[0]])
+
+        other_pc_results = 0
+        for i in range(num_components-1):
+            other_pc_results += self._rollFastDTW(new_data[i,:], tiled_model, len(model))[1]
+
+        return primary_results - other_pc_results
+
+    def _fitnessRemove(self, new_data, model):
+            linear_removed = tt.getTrend(new_data['PC1'].asfreq('D'))[0]
+            annual_removed = tt.sinuFits(new_data['PC2'].asfreq('D'), 1, 1)
+
+            return linear_removed.var() + annual_removed.var()
+
 
     def process(self, obj_data):
+
+        fit_type = self.ap_paramList[0]()
+        resolution = self.ap_paramList[1]()
+
         pca_results = obj_data.getResults()[self._pca_name]
 
         date_range = pd.date_range(pca_results['start_date'],  pca_results['end_date'])
@@ -87,18 +184,29 @@ class RotatePCA(PipelineItem):
         pca = pd.DataFrame(data = pca_results['Projection'], index = date_range, columns=column_names)
         pca.index.name='Date'
 
-
-        end_point = 360 - (360/self._resolution)
-        new_angles = brute(self._fitnessDTW,
-                           ranges = ((0, np.deg2rad(end_point)),
-                                     (0, np.deg2rad(end_point)),
-                                     (0, np.deg2rad(end_point))),
-                           Ns=self._resolution,
-                           args=(pca,self._model))
+        pca = pca.loc[:,['PC' + str(i+1) for i in range(self.num_components)]]
 
 
-        final_score = self._fitnessDTW(new_angles, pca, self._model)
+        end_point = 360 - (360/resolution)
 
+        if self.num_components == 3:
+            num_ranges = 3
+        elif self.num_components == 4:
+            num_ranges = 4
+        else:
+            raise ValueError('Wrong number of components')
+
+        ranges = []
+        for i in range(num_ranges):
+            ranges.append((0, np.deg2rad(end_point)))
+
+        new_angles = brute(func=self._fitness,
+                           ranges=ranges,
+                           Ns=resolution,
+                           args=(pca, self._model, fit_type, self.num_components))
+
+
+        final_score = self._fitness(new_angles, pca, self._model, fit_type, self.num_components)
 
         rotated_pcs = pd.DataFrame(self._rotate(pca.T, *new_angles).T, index=pca.index, columns = pca.columns)
 
