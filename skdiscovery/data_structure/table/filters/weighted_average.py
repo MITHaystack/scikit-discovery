@@ -69,9 +69,9 @@ class WeightedAverage(PipelineItem):
                     weights = 1 / data[std_dev_column]**2
                     weighted_data = data[column] * weights
 
-                    scale = weights.rolling(window=window,center=True,min_periods=0).sum()
+                    scale = weights.rolling(window=window,center=True, min_periods=1).sum()
 
-                    weighted_average = weighted_data.rolling(window=window, center=True,min_periods=0).sum() / scale
+                    weighted_average = weighted_data.rolling(window=window, center=True, min_periods=1).sum() / scale
 
                     obj_data.updateData(label, weighted_average.index, column,weighted_average)
 
@@ -85,6 +85,6 @@ class WeightedAverage(PipelineItem):
             else:
                 for column in self.column_names:
 
-                    weighted_average = data[column].rolling(window=window, center=True,min_periods=0).mean()
+                    weighted_average = data[column].rolling(window=window, center=True, min_periods=1).mean()
 
                     obj_data.updateData(label,weighted_average.index,column,weighted_average)
