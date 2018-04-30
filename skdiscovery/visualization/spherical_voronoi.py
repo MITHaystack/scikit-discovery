@@ -107,7 +107,8 @@ def find_match(region_index, region_list):
 
 
 def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, full_sphere = False, 
-                         max_v=.3, min_v=-0.3, cmap = matplotlib.cm.get_cmap('jet'), test_point = None):
+                         max_v=.3, min_v=-0.3, cmap = matplotlib.cm.get_cmap('jet'), test_point = None,
+                         **kwargs):
     '''
     Perform a Spherical Voronoi Tessellation on the input data.
 
