@@ -3,8 +3,8 @@
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for
-# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and 
-# NASA AIST Project "Computer-Aided Discovery of Earth Surface 
+# Computer Aided Discovery in Geoscience" (PI: V. Pankratius) and
+# NASA AIST Project "Computer-Aided Discovery of Earth Surface
 # Deformation Phenomena" (PI: V. Pankratius)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -13,7 +13,7 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -45,32 +45,32 @@ class PipelineItem(object):
         '''choose other random value for all parameters'''
         for param in self.ap_paramList:
             param.perturb()
-            
+
     def resetParams(self):
         '''set all parameters to initial value'''
         for param in self.ap_paramList:
             param.reset()
-            
+
     def process(self, obj_data):
         '''
-        The actual filter processing. Empty in this generic filter. 
+        The actual filter processing. Empty in this generic filter.
 
         @param obj_data: Data wrapper that will be processed
         '''
         pass
- 
+
     def __str__(self):
-        ''' 
+        '''
         String represntation of object.
 
         @return String listing all currenter parameters
         '''
         return str([str(p) for p in self.ap_paramList])
-        
+
     def getMetadata(self):
-        ''' 
+        '''
         Retrieve metadata about filter
-        
+
         @return String containing the item description and current parameters for filter.
         '''
         return self.str_description + str([str(p) for p in self.ap_paramList])
