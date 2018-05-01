@@ -25,7 +25,7 @@
 # THE SOFTWARE.
 
 
-class PipelineItem:
+class PipelineItem(object):
     '''
     The general class used to create pipeline items.
     '''
@@ -75,3 +75,23 @@ class PipelineItem:
         '''
         return self.str_description + str([str(p) for p in self.ap_paramList])
 
+
+class TablePipelineItem(PipelineItem):
+
+    def __init__(self, str_description, ap_paramList, column_list=None, error_column_list=None):
+        super(TablePipelineItem, self).__init__(str_description, ap_paramList)
+        self._column_list = column_list
+        self._error_column_list = error_column_list
+
+
+    def _getColumns(self, obj_data):
+        if self._column_list is None:
+            return obj_data.getDefaultColumns()
+        else:
+            return self._column_list
+
+    def _getErrorColumns(self, obj_data):
+        if self._column_list is None:
+            return obj_data.getDefaultErrorColumns()
+        else:
+            return self._error_column_list
