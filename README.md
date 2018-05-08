@@ -1,5 +1,5 @@
 <p align="left">
-  <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_logo360x100.png"/>
+  <img alt="Scikit Discovery" src="https://github.com/MITHaystack/scikit-discovery/raw/master/skdiscovery/docs/images/skdiscovery_logo360x100.png"/>
 </p>
 
 - Explore scientific data with a set of tools for human-guided or automated discovery
@@ -10,7 +10,7 @@
 
 
 <p align="center">
-  <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/blob/master/skdiscovery/docs/images/skdiscovery_overviewdiag.png"/>
+  <img alt="Scikit Discovery Overview" src="https://github.com/MITHaystack/scikit-discovery/raw/master/skdiscovery/docs/images/skdiscovery_overviewdiag.png"/>
 </p>
 
 ### Install
