@@ -29,14 +29,17 @@ from skdiscovery.data_structure.framework.base import PipelineItem
 class TableFilter(PipelineItem):
     ''' This class removes tables based on their label '''
 
-    def __init__(self, str_description, ap_paramList):
+    def __init__(self, str_description, ap_paramList, invert=False):
         '''
         Initialize Table FIlter
 
         @param str_description: String describing this filter
         @param ap_paramList[ap_label_list]: AutoList of table labels to remove
+        @param invert: Keep tables in list, and remove all others instead
 
         '''
+        self.invert = invert
+
         super(TableFilter, self).__init__(str_description, ap_paramList)
 
     def process(self, obj_data): 
@@ -50,7 +53,12 @@ class TableFilter(PipelineItem):
         remove_list = []
         
         for label, data in obj_data.getIterator():
-            if label in label_list:
+
+            remove_data_bool = label in label_list
+            if self.invert:
+                remove_data_bool = not remove_data_bool
+
+            if remove_data_bool:
                 remove_list.append(label)
                 
         obj_data.removeFrames(remove_list) 
