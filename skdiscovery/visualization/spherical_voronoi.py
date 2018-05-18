@@ -29,6 +29,7 @@ import pandas as pd
 import matplotlib
 from matplotlib.patches import Polygon
 from scipy.spatial import SphericalVoronoi
+import pyproj
 
 # utility functions for generating the spherical voronoi tesselation.
 
@@ -108,7 +109,7 @@ def find_match(region_index, region_list):
 
 def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, full_sphere = False, 
                          max_v=.3, min_v=-0.3, cmap = matplotlib.cm.get_cmap('jet'), test_point = None,
-                         **kwargs):
+                         proj1=None, proj2=None, **kwargs):
     '''
     Perform a Spherical Voronoi Tessellation on the input data.
 
@@ -129,9 +130,14 @@ def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, f
     @param cmap: Matplotlib color map to use
     @param test_point: Tuple containing the latitude and longitude of the ficitonal point to used to remove polygons that
                        wrap around the earth. If none, a point is automatically chosen
+    @param proj1: PyProj projection of input coordinates
+    @param proj2: PyProj projection of sphere
 
     @return Matplotlib patch collection of tessellation, scipy.spatial.SphericalVoronoi object, integer index of objects in patch collection.
     '''
+
+    data = data.copy()
+
     if full_sphere == False:
         if test_point == None:
             test_lat = -1*np.mean(data[lat_name])
@@ -153,6 +159,11 @@ def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, f
         
     # print(full_data.tail())
 
+    if proj1 != None and proj2 != None:
+        results = pyproj.transform(proj1, proj2, full_data[lon_name].as_matrix(), full_data[lat_name].as_matrix())
+        full_data[lon_name] = results[0]
+        full_data[lat_name] = results[1]
+
     xyz = pd.DataFrame(sphericalToXYZ(full_data[lat_name], full_data[lon_name]),columns=['x','y','z'],index=full_data.index)
     
     if v_name != None:
@@ -169,6 +180,11 @@ def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, f
     voronoi.sort_vertices_of_regions()
     
     latlon_verts = xyzToSpherical(voronoi.vertices[:,0],voronoi.vertices[:,1], voronoi.vertices[:,2])
+
+    if proj1 != None and proj2 != None:
+        results = pyproj.transform(proj2, proj1, latlon_verts[:,1], latlon_verts[:,0])
+        latlon_verts[:, 1] = results[0]
+        latlon_verts[:, 0] = results[1]
     
     matches = list(map(lambda x: find_match(x, voronoi.regions), range(len(voronoi.regions))))
     
