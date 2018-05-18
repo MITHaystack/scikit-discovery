@@ -5,11 +5,11 @@ package_name = 'scikit-discovery'
 
 package_list = find_packages()
 
-with open("README.md") as rfile:
+with open("README.md", 'r', encoding='utf-8') as rfile:
     readme = rfile.read()
 
 setup(name     = package_name,
-      version  = '0.9.14',
+      version  = '0.9.14.post1',
       packages = package_list,
       zip_safe = False,
 
@@ -55,5 +55,6 @@ setup(name     = package_name,
                                     'docs/skdiscovery_doxygen.pdf','examples/Amazon_GUI.ipynb',
                                     'examples/Amazon_Offload.ipynb']},
 
-      long_description = readme
+      long_description = readme,
+      long_description_content_type='text/markdown'
 )
