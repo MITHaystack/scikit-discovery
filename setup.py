@@ -5,6 +5,9 @@ package_name = 'scikit-discovery'
 
 package_list = find_packages()
 
+with open("README.md") as rfile:
+    readme = rfile.read()
+
 setup(name     = package_name,
       version  = '0.9.14',
       packages = package_list,
@@ -51,4 +54,6 @@ setup(name     = package_name,
       package_data={'skdiscovery': ['license/LICENSE','license/LGPL_LICENSE','license/MIT_LICENSE',
                                     'docs/skdiscovery_doxygen.pdf','examples/Amazon_GUI.ipynb',
                                     'examples/Amazon_Offload.ipynb']},
+
+      long_description = readme
 )
