@@ -37,7 +37,7 @@ class General_Component_Analysis(PipelineItem):
     Currently, the two built-in types of analysis are either ICA or PCA.
     '''
 
-    def __init__(self, str_description, ap_paramList, n_components, column_names):
+    def __init__(self, str_description, ap_paramList, n_components, column_names, **kwargs):
         '''
         Initialize Analysis object
 
@@ -54,6 +54,7 @@ class General_Component_Analysis(PipelineItem):
         self.ap_paramNames = ['component_type','start_time','end_time']
         self.n_components = n_components
         self.column_names = column_names
+        self.kwargs = kwargs
         self.results = dict()
 
     
@@ -89,13 +90,13 @@ class General_Component_Analysis(PipelineItem):
 
         if len(cut_data) > 0:
             if component_type == 'ICA' :
-                ca = FastICA(n_components = num_components)
+                ca = FastICA(n_components = num_components, **self.kwargs)
             else:
                 ca = PCA(n_components = num_components)
             
-                time_projection = ca.fit_transform(cut_data.T)
-                results['CA'] = ca
-                results['Projection'] = time_projection
+            time_projection = ca.fit_transform(cut_data.T)
+            results['CA'] = ca
+            results['Projection'] = time_projection
 
         else:
             results['CA'] = None
