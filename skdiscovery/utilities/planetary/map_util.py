@@ -412,16 +412,16 @@ def wgs84_distance(point1, point2, planet=Planet("wgs84"), miles=False):
     return v_calc_distance(lat1, lon1, lat2, lon2)
     
         
-# This function converts pixel x,y coordinates into global coordinates
+# This function converts pixel x,y coordinates into projected coordinates
 def global_coords(x_in,y_in,coeffs):
     '''
-    Transform pixel coordinates into global coords using affine transformation coefficients
+    Transform pixel coordinates into projected coords using affine transformation coefficients
 
     @param x_in: X pixel coordinates
     @param y_in: Y pixel coordinates
     @param coeffs: Affine transformation coefficients
 
-    @return global coordinates
+    @return projected coordinates
     '''
     
     x = x_in + 0.5
