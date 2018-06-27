@@ -40,6 +40,9 @@ from tqdm import tqdm
 
 from . import config
 
+from dask.distributed import Client
+
+
 
 def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, verbose = False):
     ''' 
@@ -107,7 +110,7 @@ class DiscoveryPipeline:
         self.__cluster = None
         self._dispy_http = None        
 
-    def run(self, num_runs=1, perturb = 'pipeline', num_cores = 1, amazon=False, verbose=False):
+    def run(self, num_runs=1, perturb = 'pipeline', num_nodes = 1, offload=None, verbose=False):
         '''
         Run the pipeline
 
@@ -117,15 +120,66 @@ class DiscoveryPipeline:
         @param num_cores: Number of cores on the local machine to use. Defaults
                           to 1 core. Use 0 to select the minimum between the
                           number of runs and cpu cores.
-        @param amazon: Offload the pipeline on amazon
+        @param offload: Offload the pipeline to 'amazon' or 'cluster'
         @param verbose: Display the pipeline for each run
         '''
 
-        perturb = perturb.lower()
+
+
+        # Function to generate inputs for running
+        def generatePipelineInputs(shared_lock=None):
+            self.stageConfigurationHistory.append(self.getMetadata())
+            if verbose:
+                self.plotPipelineInstance()
+            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
+
+            for i in range(1, num_runs):
+                if perturb in ('pipeline', 'both'):
+                    self.perturb()
+                if perturb in ('data', 'both'):
+                    self.perturbData()
+
+                self.stageConfigurationHistory.append(self.getMetadata())
+                if verbose:
+                    self.plotPipelineInstance()
+                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, i
+
+            # If running multiple times, perturb the pipeline or the data
+            if num_runs > 1:
+                if perturb in ('pipeline', 'both'):
+                    self.perturb()
+                if perturb in ('data', 'both'):
+                    self.perturbData()
+
+
+        # perturb = perturb.lower()
+
+
+        # data_fetchers_list = []
+        # stage_container_list = []
+        # run_id_list = []
+
+        # if num_runs > 1:
+        #     for i in range(num_runs):
+        #         data_fetcher_list.append(copy.deepcopy(self.data_fetcher))
+        #         stage_container_list.append(copy.deepcopy(self.stage_containers))
+        #         run_id_list.append(i)
+
+
+        #     if perturb in ('pipeline', 'both'):
+        #         self.perturb()
+        #     if perturb in ('data', 'both'):
+        #         self.perturbData()
+
+
+        # else:
+        #     data_fetcher_list.append(self.data_fetcher)
+        #     stage_container_list.append(self.stage_containers)
+        #     run_id_list.append(-1)
 
 
         # Run the job on Amazon
-        if amazon == True:
+        if offload == 'amazon':
 
             if self.__cluster == None:
                 self._startCluster(config.getDispyPassword())
@@ -136,24 +190,16 @@ class DiscoveryPipeline:
             jobs = []
 
             for i in range(0,num_runs):
-                if num_runs > 1:
-                    run_index = i
-                else:
-                    run_index = -1
 
                 if verbose:
                     self.plotPipelineInstance()
-                job = self.__cluster.submit(copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), run_id = run_index)
+
+
+                job = self.__cluster.submit(data_fetcher_list[i], stage_container_list[i], run_id_list[i])
                 job.id = i
                 jobs.append(job)
                 # save metadata configuration for history
                 self.stageConfigurationHistory.append(self.getMetadata())
-
-                if num_runs > 1:
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
 
             for job in jobs:
                 results = job()
@@ -166,7 +212,20 @@ class DiscoveryPipeline:
             self.__cluster.close()
             self.__cluster = None
 
+
+        elif offload == 'cluster':
+
+            client = Client('localhost:8786')
+
+            job_list = [client.submit(_cluster_run, *outputs) for outputs in generatePipelineInputs()]
+
+            for job in job_list:
+                self.RA_results.append(job.result())
+
+            client.close()
+
         # Run the job on the local machine
+
         else:
 
             if num_runs != 1 and num_cores != 0 and self.data_fetcher.multirun_enabled() == False:
@@ -176,30 +235,6 @@ class DiscoveryPipeline:
                 shared_manager = None
                 shared_lock = None
 
-            # Function to generate inputs for running
-            def generatePipelineInputs():
-                self.stageConfigurationHistory.append(self.getMetadata())
-                if verbose:
-                    self.plotPipelineInstance()
-                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
-
-                for i in range(1, num_runs):
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
-
-                    self.stageConfigurationHistory.append(self.getMetadata()) 
-                    if verbose:
-                        self.plotPipelineInstance()
-                    yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, i
-
-                # If running multiple times, perturb the pipeline or the data
-                if num_runs > 1:
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
                     
             # Run the jobs
             with ExitStack() as stack:
@@ -219,7 +254,7 @@ class DiscoveryPipeline:
                         stack.callback(pool.close)
 
                 if (num_cores == 0 or num_cores > 1) and num_runs != 1:
-                    results = pool.map(_wrap_cluster, generatePipelineInputs())
+                    results = pool.map(_wrap_cluster, generatePipelineInputs(shared_lock))
                 else:
                     results = list(map(_wrap_cluster, generatePipelineInputs()))
 
