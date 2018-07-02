@@ -41,7 +41,7 @@ class KalmanFilter(PipelineItem):
 
     def __init__(self, str_description, ap_paramList, uncertainty_clip=5):
         '''
-        Initialize Kalman Smooterh
+        Initialize Kalman Smoother
 
         @param str_description: String describing filter        
         @param ap_paramList[ap_tau]: the correlation time
