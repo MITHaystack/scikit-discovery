@@ -36,7 +36,7 @@ class KalmanFilter(PipelineItem):
     Runs a forward and backward Kalman Smoother with a FOGM state on table data
 
     For more information see: Ji, K. H. 2011, PhD thesis, MIT, and
-    Fraser, D. C., and Potter, J. E., IEEE Trans. Automat. Contr., Acl4, 4, 387-390
+    Fraser, D. C., and Potter, J. E. 1969, IEEE Trans. Automat. Contr., Acl4, 4, 387-390
     '''
 
     def __init__(self, str_description, ap_paramList, uncertainty_clip=5, column_names=None,
