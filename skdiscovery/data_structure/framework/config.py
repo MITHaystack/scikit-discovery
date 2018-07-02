@@ -63,6 +63,20 @@ def writeConfigValue(section,key,value):
     config_handle.close()
 
 
+def getConfigValue(section, key):
+    '''
+    Retrieve a value from the config file
+
+    @param section: Section of the configuration file that contains the value
+    @param key: Key of the value
+
+    @return value in the specified section associated with given key
+    '''
+
+    conf = getConfig()
+
+    return conf.get(section, key, fallback=None)
+
 def getDispyPassword():
     '''
     Get dispy password
