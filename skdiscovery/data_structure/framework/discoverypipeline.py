@@ -152,32 +152,6 @@ class DiscoveryPipeline:
                     self.perturbData()
 
 
-        # perturb = perturb.lower()
-
-
-        # data_fetchers_list = []
-        # stage_container_list = []
-        # run_id_list = []
-
-        # if num_runs > 1:
-        #     for i in range(num_runs):
-        #         data_fetcher_list.append(copy.deepcopy(self.data_fetcher))
-        #         stage_container_list.append(copy.deepcopy(self.stage_containers))
-        #         run_id_list.append(i)
-
-
-        #     if perturb in ('pipeline', 'both'):
-        #         self.perturb()
-        #     if perturb in ('data', 'both'):
-        #         self.perturbData()
-
-
-        # else:
-        #     data_fetcher_list.append(self.data_fetcher)
-        #     stage_container_list.append(self.stage_containers)
-        #     run_id_list.append(-1)
-
-
         # Run the job on Amazon
         if offload == 'amazon':
 
@@ -187,15 +161,15 @@ class DiscoveryPipeline:
             self._createDispyLink()
 
             # Run Jobs on Amazon
+
             jobs = []
 
-            for i in range(0,num_runs):
+            for i, args in enumerate(generatePipelineInputs()):
 
                 if verbose:
                     self.plotPipelineInstance()
 
-
-                job = self.__cluster.submit(data_fetcher_list[i], stage_container_list[i], run_id_list[i])
+                job = self.__cluster.submit(*args)
                 job.id = i
                 jobs.append(job)
                 # save metadata configuration for history
@@ -455,7 +429,7 @@ class DiscoveryPipeline:
         import dispy
         
         # Amazon run function
-        def amazon_run(data_fetcher, stage_containers, run_id=-1):
+        def amazon_run(data_fetcher, stage_containers, shared_lock=None, run_id=-1, verbose=False):
             global amazon_lock
             import time
             if data_fetcher.multirun_enabled() == False:
