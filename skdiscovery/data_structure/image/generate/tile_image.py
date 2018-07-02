@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 from skdiscovery.data_structure.framework.base import PipelineItem
 from skdiscovery.utilities.patterns.image_tools import divideIntoSquares
-# from pyinsar.processing.utilities import insar_simulator_utils
 
 import numpy as np
 
@@ -36,18 +35,6 @@ class TileImage(PipelineItem):
         
         for label, data in obj_data.getIterator():
 
-            # if threshold_function is not None:
-            #     extents = insar_simulator_utils.calc_bounding_box(data,
-            #                                                       threshold_function = threshold_function)
-
-            #     x_slice = slice(extents[0], extents[1])
-            #     y_slice = slice(extents[2], extents[3])
-
-            # else:
-            #     x_slice = slice(None)
-            #     y_slice = slice(None)
-
-            # extents, patches = divideIntoSquares(data[y_slice, x_slice], self.size, stride)
             extents, patches = divideIntoSquares(data, self.size, stride)
 
             if self._min_fraction is not None:
