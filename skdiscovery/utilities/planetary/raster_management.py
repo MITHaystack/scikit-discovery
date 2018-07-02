@@ -177,7 +177,8 @@ def create_raster_from_array(raster_array,
                              data_type = gdal.GDT_Float64,
                              no_data_value = -99999.,
                              scale = 1.,
-                             offset = 0.):
+                             offset = 0.,
+                             options = []):
     raster_x_size = raster_array.shape[1]
     raster_y_size = raster_array.shape[0]
     number_of_bands = 1
@@ -191,7 +192,8 @@ def create_raster_from_array(raster_array,
                                raster_x_size,
                                raster_y_size,
                                number_of_bands,
-                               data_type)
+                               data_type,
+                               options = options)
     new_raster.SetGeoTransform(geotransform)
     new_raster.SetProjection(projection)
     
