@@ -108,9 +108,10 @@ class DiscoveryPipeline:
         self.stageConfigurationHistory = []
         self.RA_results = []
         self.__cluster = None
-        self._dispy_http = None        
+        self._run_id = 0
 
-    def run(self, num_runs=1, perturb = 'pipeline', num_nodes = 1, offload=None, verbose=False):
+
+    def run(self, num_runs=1, perturb = 'pipeline', num_cores = 1, offload=None, verbose=False):
         '''
         Run the pipeline
 
@@ -131,7 +132,8 @@ class DiscoveryPipeline:
             self.stageConfigurationHistory.append(self.getMetadata())
             if verbose:
                 self.plotPipelineInstance()
-            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
+            self._run_id += 1
+            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1
 
             for i in range(1, num_runs):
                 if perturb in ('pipeline', 'both'):
@@ -142,7 +144,8 @@ class DiscoveryPipeline:
                 self.stageConfigurationHistory.append(self.getMetadata())
                 if verbose:
                     self.plotPipelineInstance()
-                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, i
+                self._run_id += 1
+                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1
 
             # If running multiple times, perturb the pipeline or the data
             if num_runs > 1:
@@ -165,9 +168,6 @@ class DiscoveryPipeline:
             jobs = []
 
             for i, args in enumerate(generatePipelineInputs()):
-
-                if verbose:
-                    self.plotPipelineInstance()
 
                 job = self.__cluster.submit(*args)
                 job.id = i
@@ -214,30 +214,28 @@ class DiscoveryPipeline:
                 shared_manager = None
                 shared_lock = None
 
-                    
-            # Run the jobs
-            with ExitStack() as stack:
 
-                # Create workers for processing multiple pipelines locally
-                if num_runs != 1:
-                    if num_cores == 0:
-                        # Create a pool with either the number of cores on
-                        # the machine, or the number of runs, whichever is
-                        # less
-                        pool = Pool(min(cpu_count(), num_runs))
-                        stack.callback(pool.close)
-                    elif num_cores > 1:
-                        # If number of cores is specified generate that many
-                        # workers
-                        pool = Pool(min(num_cores, num_runs))
-                        stack.callback(pool.close)
+            if (num_cores == 0 or num_cores > 1) and num_runs != 1:
 
-                if (num_cores == 0 or num_cores > 1) and num_runs != 1:
-                    results = pool.map(_wrap_cluster, generatePipelineInputs(shared_lock))
+                if num_cores == 0:
+                    # Automatically select the appropriate number of workers
+                    num_workers = min(cpu_count(), num_runs)
+
+                elif num_cores > 1:
+                    # Limit the number of workers by the provided number
+                    num_workers = min(num_cores, num_runs)
+
                 else:
-                    results = list(map(_wrap_cluster, generatePipelineInputs()))
+                    raise RuntimeError('Number of specified cores must be greather than or equal to 0')
 
-                self.RA_results += results                
+
+                with Pool(num_workers) as pool:
+                    results = pool.map(_wrap_cluster, generatePipelineInputs(shared_lock))
+
+            else:
+                results = list(map(_wrap_cluster, generatePipelineInputs()))
+
+            self.RA_results += results
         
     def perturb(self):
         ''' Perturb the paramters in the stage containers '''
