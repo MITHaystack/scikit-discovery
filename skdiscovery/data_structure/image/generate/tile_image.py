@@ -8,7 +8,7 @@ import numpy as np
 
 class TileImage(PipelineItem):
 
-    def __init__(self, str_description, ap_paramList, size, min_deviation=None, min_fraction=None):
+    def __init__(self, str_description, ap_paramList, size, min_deviation=None, min_fraction=None, deviation_as_percent=False):
 
         assert min_deviation is None and min_fraction is None or \
                min_deviation is not None and min_fraction is not None, \
@@ -17,6 +17,7 @@ class TileImage(PipelineItem):
         self.size = size
         self._min_deviation = min_deviation
         self._min_fraction = min_fraction
+        self._deviation_as_percent = deviation_as_percent
         
 
         super(TileImage, self).__init__(str_description, ap_paramList)
@@ -37,9 +38,14 @@ class TileImage(PipelineItem):
 
             extents, patches = divideIntoSquares(data, self.size, stride)
 
+            if self._deviation_as_percent:
+                min_deviation = self._min_deviation * np.max(data)
+
+            else:
+                min_deviation = self._min_deviation
+
             if self._min_fraction is not None:
-                valid_index = np.count_nonzero(np.abs(patches) < self._min_deviation, axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
-                print(np.count_nonzero(valid_index))
+                valid_index = np.count_nonzero(np.abs(patches) < min_deviation, axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
                 patches = patches[valid_index]
                 extents = extents[valid_index]
 
