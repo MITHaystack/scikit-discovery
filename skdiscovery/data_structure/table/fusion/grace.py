@@ -45,27 +45,24 @@ class GraceFusion(PipelineItem):
     Works on table data (original data from http://grace.jpl.nasa.gov/data/get-data/monthly-mass-grids-land/)
     '''
 
-    def __init__(self, str_description, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty', gldas = "Off",
-                 use_mascons=False, apply_scale_factor = True):
+    def __init__(self, str_description, ap_paramList, metadata, column_data_name = 'Grace', column_error_name = 'Grace_Uncertainty'):
         '''
         Initialize Grace Fusion item
 
         @param str_description: String describing item
+        @param ap_paramList[gldas]: How to use of the global land data assimilation water model
+        @param ap_paramList[mascons]: Boolean indicating if the mascon solution should be used
+        @param ap_paramList[apply_scale_factor]: Boolean indicating if the scaling factors shoud be applied
         @param metadata: Metadata that contains lat,lon coordinates based on data labels
         @param column_data_name: Name of column for GRACE data
         @param column_error_name: Grace Uncertainty column name
-        @param gldas: Indicating use of the global land data assimilation water model
-        @param use_mascons: Use mascon solution instead of spherical harmonics
         '''
 
-        super(GraceFusion, self).__init__(str_description, [])
+        super(GraceFusion, self).__init__(str_description, ap_paramList)
         self.metadata = metadata.copy()
         self.column_data_name = column_data_name
         self.column_error_name = column_error_name
         # remove_sm_and_snow
-        self.gldas = gldas
-        self.use_mascons = use_mascons
-        self.apply_scale_factor = apply_scale_factor
         self._tileCache = None
 
 
@@ -77,6 +74,11 @@ class GraceFusion(PipelineItem):
         '''
 
         # Only perform fusion if data exists
+
+        gldas = self.ap_paramList[0]()
+        use_mascons = self.ap_paramList[1]()
+        apply_scale_factor = self.ap_paramList[2]()
+
         if obj_data.getLength() > 0:
             start_date = None
             end_date = None
@@ -102,7 +104,7 @@ class GraceFusion(PipelineItem):
 
                 al_locations = AutoList(locations)
                 al_locations_gldas = AutoList(locations)
-                if self.use_mascons == False:
+                if use_mascons == False:
                     graceDF = GDF([al_locations], start_date, end_date)
 
                 else:
@@ -116,10 +118,10 @@ class GraceFusion(PipelineItem):
                     ac_data = DataAccumulator('Data',[])
                     sc_data = StageContainer(ac_data)
 
-                    fl_grace = CalibrateGRACE('Calibrate', apply_scale_factor = self.apply_scale_factor)
+                    fl_grace = CalibrateGRACE('Calibrate', apply_scale_factor = apply_scale_factor)
                     sc_grace = StageContainer(fl_grace)
 
-                    fl_mascon = CalibrateGRACEMascon('CalibrateMascon', apply_scale_factor = self.apply_scale_factor)
+                    fl_mascon = CalibrateGRACEMascon('CalibrateMascon', apply_scale_factor = apply_scale_factor)
                     sc_mascon = StageContainer(fl_mascon)
 
                     fl_resample = Resample('Resample',start_date, end_date)
@@ -146,17 +148,17 @@ class GraceFusion(PipelineItem):
 
 
                 # Load GRACE data
-                if self.use_mascons == False:
+                if use_mascons == False:
                     grace_data = getData(graceDF, 'grace')
                 else:
                     grace_data = getData(graceDF, 'mascon')
 
-                if self.gldas.lower() == 'off':
+                if gldas.lower() == 'off':
                 # We are not removing sm and snow
                     obj_data.addColumn(label, self.column_data_name, grace_data['EWD'])
                     obj_data.addColumn(label, self.column_error_name, grace_data['EWD_Error'])
 
-                elif self.gldas.lower() == 'remove':
+                elif gldas.lower() == 'remove':
                     # If we are removing sm and snow
                     gldas_data = getData(gldasDF, 'gldas')
 
@@ -224,8 +226,8 @@ class GraceFusion(PipelineItem):
                     obj_data.addColumn(label, self.column_data_name, grace_data['EWD'])
                     obj_data.addColumn(label, self.column_error_name, grace_data['EWD_Error'])
 
-                elif self.gldas.lower() == 'only':
+                elif gldas.lower() == 'only':
                     obj_data.addColumn(label, self.column_data_name, ['EWD'])
 
                 else:
-                    raise ValueError('Did not understand gldas option: ' + self.gldas.lower())
+                    raise ValueError('Did not understand gldas option: ' + gldas.lower())
