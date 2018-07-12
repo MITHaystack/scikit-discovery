@@ -229,7 +229,7 @@ class DiscoveryPipeline:
                     elif num_cores > 1:
                         # If number of cores is specified generate that many
                         # workers
-                        pool = Pool(num_cores)
+                        pool = Pool(min(num_cores, num_runs))
                         stack.callback(pool.close)
 
                 if (num_cores == 0 or num_cores > 1) and num_runs != 1:
