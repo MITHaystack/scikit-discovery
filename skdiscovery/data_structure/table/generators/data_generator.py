@@ -39,7 +39,7 @@ class DataGenerator(DataFetcherBase):
 
 
         @param length: Number of rows to generate
-        @param *args: Dictionaries containing entries: 'name',,'start', 'end', and optionally 'func'
+        @param *args: Dictionaries containing entries: 'name', 'start', 'end', and optionally 'func'
         @param seed: Seed to use when generating random data
         @param final_function: Final function to call on random data
         '''
@@ -50,6 +50,11 @@ class DataGenerator(DataFetcherBase):
         self.final_function = final_function
 
     def output(self):
+        '''
+        Generate data
+
+        @return Table data wrapper of generated data
+        '''
         if self.seed is not None:
             np.random.seed(self.seed)
             
