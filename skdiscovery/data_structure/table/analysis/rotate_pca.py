@@ -43,9 +43,13 @@ class RotatePCA(PipelineItem):
     def __init__(self, str_description, ap_paramList, pca_name, model, norm=None, num_components=3):
         '''
 
+        @param str_description: String description of this item
         @param ap_paramList[fit_type]: Fitness test to use (either 'dtw' or 'remove')
         @param ap_paramList[resolution]: Fitting resolution when using brute force
-
+        @param pca_name: Name of pca results
+        @param model: Model to compare to (used in dtw)
+        @param norm: Normalization to use when comparing data and model (if None, absolute differences are used)
+        @param num_components: Number of pca components to use
         '''
         self._pca_name = pca_name
         self._model = tt.normalize(model)
@@ -60,6 +64,19 @@ class RotatePCA(PipelineItem):
 
 
     def _rotate(self, row_vector, az, ay, ax):
+        '''
+        Rotate row vectors in three dimensions
+
+        Rx * Ry * Rz * row_vectors
+
+        @param row_vector: Data as a row vector
+        @param az: Z angle
+        @param ay: Y angle
+        @param ax: X angle
+
+        @return rotated row vectors
+        '''
+
         rz = np.array([[np.cos(az), -np.sin(az), 0], [np.sin(az), np.cos(az), 0], [0, 0, 1]])
         ry = np.array([[np.cos(ay), 0, np.sin(ay)], [0, 1, 0], [-np.sin(ay), 0, np.cos(ay)]])
         rx = np.array([[ 1, 0, 0], [0, np.cos(ax), -np.sin(ax)], [0, np.sin(ax), np.cos(ax)]])
@@ -69,6 +86,13 @@ class RotatePCA(PipelineItem):
         return rot @ row_vector
 
     def _rotate4d(self, row_vector, rot_angles):
+        '''
+        Rotate row vectors in four dimensions
+
+        @param row_vector: Data as a row vector
+        @param rot_angles: Rotation angles ('xy', 'yz', 'zx', 'xw', 'yw', 'zw')
+        @return rotated row vectors
+        '''
 
         index_list = []
         index_list.append([0,1])
@@ -116,6 +140,16 @@ class RotatePCA(PipelineItem):
 
 
     def _rollFastDTW(self, data, centered_tiled_model, model_size):
+        '''
+        Compute minimum fastdtw distance for a model to match length of real data at all possible phases
+
+
+        @param data: Real input data
+        @param centered_tiled_model: Model after being tiled to appropriate length and normalized (mean removed an scaled by standard devation)
+        @param model_size: Size of the original model (before tiling)
+        @return Index of minimum distance, minimum distance
+        '''
+
         centered_data = tt.normalize(data)
 
         fitness_values = [fastdtw(centered_data, np.roll(centered_tiled_model, i), dist=self.norm)[0] for i in range(model_size)]
@@ -125,10 +159,31 @@ class RotatePCA(PipelineItem):
 
 
     def _tileModel(self, in_model, new_size):
+        '''
+        Tile a model to increase its length
+
+        @param in_model: Input model
+        @param new_size: Size of tiled model
+        @return Tiled model
+        '''
+
         num_models = int(np.ceil(new_size / len(in_model)))
         return np.tile(in_model, num_models)[:new_size]
 
     def _fitness(self, z, data, model, fit_type = 'dtw', num_components=3):
+        '''
+        Compute fitness of data given a model and rotation
+
+        @param z: Rotation angles
+        @param data: Input data
+        @param model: Input model
+        @param fit_type: Choose fitness computation between dynamic time warping ('dtw') or 
+                         by comparing to an seasonal and linear signal ('remove')
+        @param num_components: Number of pca components to use. Can be 3 or 4 for fit_type='dtw' 
+                               or 3 for fit_type='remove'
+        @return fitness value
+
+        '''
         if num_components == 3:
             new_data = self._rotate(data.as_matrix().T, *z)
         elif num_components == 4:
@@ -139,8 +194,7 @@ class RotatePCA(PipelineItem):
             return self._fitnessDTW(new_data, model, num_components)
         elif fit_type == 'remove' and num_components == 3:
             return self._fitnessRemove(pd.DataFrame(new_data.T, columns=['PC1','PC2','PC3'],
-                                                    index=data.index),
-                                       model)
+                                                    index=data.index))
         elif fit_type == 'remove':
             raise NotImplementedError("The 'remove' fitness type only works with 3 components")
         else:
@@ -148,6 +202,16 @@ class RotatePCA(PipelineItem):
 
 
     def _fitnessDTW(self, new_data, model, num_components=3):
+        '''
+        Compute fitness value using dynamic time warping
+
+        @param new_data: Input data
+        @param model: Input model
+        @param: Number of pca components to use (3 or 4)
+
+        @return fitness value using dynamic time warping
+        '''
+
 
         tiled_model = tt.normalize(self._tileModel(model, new_data.shape[1]))
 
@@ -165,14 +229,26 @@ class RotatePCA(PipelineItem):
 
         return primary_results - other_pc_results
 
-    def _fitnessRemove(self, new_data, model):
-            linear_removed = tt.getTrend(new_data['PC1'].asfreq('D'))[0]
-            annual_removed = tt.sinuFits(new_data['PC2'].asfreq('D'), 1, 1)
+    def _fitnessRemove(self, new_data):
+        '''
+        fitness value determined by how well seasonal and linear signals can be removed frm first two components
 
-            return linear_removed.var() + annual_removed.var()
+        @param new_data: Input data
+        @return fitness value determined by comparison of first two components to seasonal and linear signals
+        '''
+
+        linear_removed = tt.getTrend(new_data['PC1'].asfreq('D'))[0]
+        annual_removed = tt.sinuFits(new_data['PC2'].asfreq('D'), 1, 1)
+
+        return linear_removed.var() + annual_removed.var()
 
 
     def process(self, obj_data):
+        '''
+        Compute rotation angles for PCA
+
+        @param obj_data: Input table data wrapper
+        '''
 
         fit_type = self.ap_paramList[0]()
         resolution = self.ap_paramList[1]()
