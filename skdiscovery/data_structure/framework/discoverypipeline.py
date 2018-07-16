@@ -230,7 +230,7 @@ class DiscoveryPipeline:
 
 
                 with Pool(num_workers) as pool:
-                    results = pool.map(_wrap_cluster, generatePipelineInputs(shared_lock))
+                    results = list(pool.imap(_wrap_cluster, generatePipelineInputs(shared_lock)))
 
             else:
                 results = list(map(_wrap_cluster, generatePipelineInputs()))
