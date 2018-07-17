@@ -40,8 +40,9 @@ from tqdm import tqdm
 
 from . import config
 
-from dask.distributed import Client
+from skdiscovery.utilities.cloud.ssh_reverse import print_verbose
 
+from dask.distributed import Client
 
 
 def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, verbose = False):
@@ -133,7 +134,7 @@ class DiscoveryPipeline:
             if verbose:
                 self.plotPipelineInstance()
             self._run_id += 1
-            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1
+            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1, verbose
 
             for i in range(1, num_runs):
                 if perturb in ('pipeline', 'both'):
@@ -145,7 +146,7 @@ class DiscoveryPipeline:
                 if verbose:
                     self.plotPipelineInstance()
                 self._run_id += 1
-                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1
+                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1, verbose
 
             # If running multiple times, perturb the pipeline or the data
             if num_runs > 1:
@@ -177,6 +178,7 @@ class DiscoveryPipeline:
 
             for job in jobs:
                 results = job()
+                print_verbose(job.stdout, verbose)
                 # save results in the result accumulator
                 if(job.exception is not None):
                     print(job.exception)
@@ -430,9 +432,13 @@ class DiscoveryPipeline:
         def amazon_run(data_fetcher, stage_containers, shared_lock=None, run_id=-1, verbose=False):
             global amazon_lock
             import time
+            from skdiscovery.utilities.cloud.ssh_reverse import print_verbose
+
             if data_fetcher.multirun_enabled() == False:
                 with amazon_lock:
+                    print_verbose('ID: {}; Entering lock at {}'.format(run_id, time.time()), verbose)
                     data_container = data_fetcher.output()
+                    print_verbose('ID: {}; Exiting lock at {}'.format(run_id, time.time()), verbose)
 
             else:
                 data_container = data_fetcher.output()
