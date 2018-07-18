@@ -440,6 +440,7 @@ class GlobalCoords(object):
 
         @param aff_coeffs: Array containing affince coefficients
         @param center_pixels: Pixel coordinates refer to the center of each pixel
+                              so 0.5 is added to inputs
         """
 
         self._aff_coeffs = aff_coeffs
