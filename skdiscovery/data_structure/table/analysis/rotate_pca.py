@@ -63,18 +63,18 @@ class RotatePCA(PipelineItem):
 
 
 
-    def _rotate(self, row_vector, az, ay, ax):
+    def _rotate(self, col_vector, az, ay, ax):
         '''
-        Rotate row vectors in three dimensions
+        Rotate column vectors in three dimensions
 
-        Rx * Ry * Rz * row_vectors
+        Rx * Ry * Rz * col_vectors
 
-        @param row_vector: Data as a row vector
+        @param col_vector: Data as a column vector
         @param az: Z angle
         @param ay: Y angle
         @param ax: X angle
 
-        @return rotated row vectors
+        @return rotated column vectors
         '''
 
         rz = np.array([[np.cos(az), -np.sin(az), 0], [np.sin(az), np.cos(az), 0], [0, 0, 1]])
@@ -83,15 +83,15 @@ class RotatePCA(PipelineItem):
 
         rot = rx @ ry @ rz
 
-        return rot @ row_vector
+        return rot @ col_vector
 
-    def _rotate4d(self, row_vector, rot_angles):
+    def _rotate4d(self, col_vector, rot_angles):
         '''
-        Rotate row vectors in four dimensions
+        Rotate column vectors in four dimensions
 
-        @param row_vector: Data as a row vector
+        @param col_vector: Data as a column vector
         @param rot_angles: Rotation angles ('xy', 'yz', 'zx', 'xw', 'yw', 'zw')
-        @return rotated row vectors
+        @return rotated column vectors
         '''
 
         index_list = []
@@ -136,7 +136,7 @@ class RotatePCA(PipelineItem):
         for label, matrix in rotation_dict.items():
             rot_matrix = rot_matrix @ matrix
 
-        return rot_matrix @ row_vector
+        return rot_matrix @ col_vector
 
 
     def _rollFastDTW(self, data, centered_tiled_model, model_size):
