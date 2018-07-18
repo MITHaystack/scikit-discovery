@@ -33,15 +33,16 @@ from skdiscovery.utilities.patterns import kalman_smoother
 
 class KalmanFilter(PipelineItem):
     '''
-    Runs a Kalman Smoother on table data 
+    Runs a forward and backward Kalman Smoother with a FOGM state on table data
 
-    For more information see: Ji, K. H. 2011, PhD thesis, MIT.
+    For more information see: Ji, K. H. 2011, PhD thesis, MIT, and
+    Fraser, D. C., and Potter, J. E. 1969, IEEE Trans. Automat. Contr., Acl4, 4, 387-390
     '''
 
     def __init__(self, str_description, ap_paramList, uncertainty_clip=5, column_names=None,
                  error_column_names = None, fillna=True):
         '''
-        Initialize KalmanFilter
+        Initialize Kalman Smoother
 
         @param str_description: String describing filter        
         @param ap_paramList[ap_tau]: the correlation time
