@@ -429,8 +429,16 @@ def global_coords(x_in,y_in,coeffs):
     return (coeffs[0] + coeffs[1]*x + coeffs[2]*y, coeffs[3] + coeffs[4]*x + coeffs[5]*y)
 
 class GlobalCoords(object):
-
+    """
+    Converts from pixel coordinates to projected coordinates
+    """
     def __init__(self, aff_coeffs, center_pixels=True):
+        """
+        Initialize GlobalCoords object
+
+        @param aff_coeffs: Array containing affince coefficients
+        @param center_pixels: Pixel coordinates refer to the center of each pixel
+        """
 
         self._aff_coeffs = aff_coeffs
 
@@ -444,6 +452,13 @@ class GlobalCoords(object):
 
 
     def __call__(self, y_in, x_in):
+        """
+        Get projected coordinates from pixel coordinates
+
+        @param y_in: Pixel location in x
+        @param x_in: Pixel location in y
+        @return: y projected coordinate, x projected coordinate
+        """
         y = y_in + self._y_offset
         x = x_in + self._x_offset
         return (self._aff_coeffs[3] + self._aff_coeffs[4]*x + self._aff_coeffs[5]*y,
