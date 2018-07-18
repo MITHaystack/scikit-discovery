@@ -421,6 +421,8 @@ def global_coords(x_in,y_in,coeffs):
     '''
     Transform pixel coordinates into projected coords using affine transformation coefficients
 
+    **Assumes input pixel coordinates refer to the center of the pixel**
+
     @param x_in: X pixel coordinates
     @param y_in: Y pixel coordinates
     @param coeffs: Affine transformation coefficients
