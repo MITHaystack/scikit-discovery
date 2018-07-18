@@ -291,6 +291,6 @@ class RotatePCA(PipelineItem):
         results['rotation_angles'] = new_angles
         results['rotated_pcs'] = rotated_pcs
         results['final_score'] = final_score
-        results['rotated_components'] =  self._rotate(pca_results.components_, *new_angles)
+        results['rotated_components'] =  self._rotate(pca_results['CA'].components_, *new_angles)
 
         obj_data.addResult(self.str_description, results)
