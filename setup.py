@@ -9,7 +9,7 @@ with open("README.md", 'r', encoding='utf-8') as rfile:
     readme = rfile.read()
 
 setup(name     = package_name,
-      version  = '0.9.15',
+      version  = '0.9.16',
       packages = package_list,
       zip_safe = False,
 
