@@ -33,6 +33,11 @@ class DataAccumulator(PipelineItem):
     '''
 
     def __init__(self, str_description, save_wrapper=False):
+        """
+        Initialize DataAccumulator Item
+
+        @param save_wrapper: Save the data wrapper instead of just the data
+        """
         self._save_wrapper = save_wrapper
         super(DataAccumulator, self).__init__(str_description)
 
