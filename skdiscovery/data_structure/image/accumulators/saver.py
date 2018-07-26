@@ -43,10 +43,9 @@ class Saver(PipelineItem):
         '''
         Initialize coherence pipeline item
 
-        @param str_description: Short string describing item
-        @param window: Tuple indicating the y and x window size
-        @param pairing: How to pair slc images. "neighbor" computes
-                        coherence between neighboring images
+        @param str_description: String identifier for item
+        @param folder_name: Name to save hdf fils
+        @param data_type: Data type to save data as (None defaults to input data type)
         '''
 
         self.folder_name = folder_name
@@ -57,7 +56,7 @@ class Saver(PipelineItem):
 
     def process(self, obj_data):
         '''
-        Compute the coherency between two
+        Save images to hdf files
 
         @param obj_data: Data wrapper
         '''
