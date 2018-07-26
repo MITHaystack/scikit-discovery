@@ -24,6 +24,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# skdiscovery imports
+from skdiscovery.data_structure.framework.base import PipelineItem
+
 class SelectChannel(PipelineItem):
     """
     Select a specific channel out of a 3 dimensional image
