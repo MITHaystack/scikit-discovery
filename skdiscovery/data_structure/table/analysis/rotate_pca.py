@@ -39,6 +39,9 @@ from collections import OrderedDict
 
 
 class RotatePCA(PipelineItem):
+    """
+    *** In Development *** Class for rotating PCA to seperate superimposed signals
+    """
 
     def __init__(self, str_description, ap_paramList, pca_name, model, norm=None, num_components=3):
         '''
