@@ -39,7 +39,7 @@ class RotateImage(PipelineItem):
         '''
         Generate new images by rotate input images
 
-        @param Image data wrapper
+        @param obj_data: Image data wrapper
         '''
 
         new_data = OrderedDict()

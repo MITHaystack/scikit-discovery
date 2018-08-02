@@ -51,6 +51,7 @@ def rotate(col_vectors, az, ay, ax):
 
     Rx * Ry * Rz * row_vectors
 
+    @param col_vectors: Three dimensional Column vectors
     @param az: Z angle
     @param ay: Y angle
     @param ax: X angle

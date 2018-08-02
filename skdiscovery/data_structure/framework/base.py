@@ -85,8 +85,8 @@ class TablePipelineItem(PipelineItem):
         """
         Initialize Table Pipeline item
 
-        @param: str_description: String describing filter
-        @param: ap_paramList: List of AutoParams and AutoLists
+        @param str_description: String describing filter
+        @param ap_paramList: List of AutoParams and AutoLists
         @param column_list: List of columns to process
         @param error_column_list: List of the associated error columns
         """
