@@ -40,7 +40,7 @@ class WeightedAverage(PipelineItem):
         @param ap_paramList[window]: Window to use for computing rolling weighted average
         @param column_names: Names of columns to apply the weighted average
         @param std_dev_column_names: Names of columns of the standard deviations. If none a regular mean is computed.
-        @param propogate_uncertainties: Propogate uncertainties assuming uncorrelated errors
+        @param propagate_uncertainties: Propagate uncertainties assuming uncorrelated errors
         '''
 
         super(WeightedAverage,self).__init__(str_description, ap_paramList)
