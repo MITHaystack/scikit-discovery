@@ -47,6 +47,7 @@ class General_Component_Analysis(PipelineItem):
         @param ap_paramList[end_time]: ending time for CA
         @param n_components: Number of components to compute
         @param column_names: Columns names to use 
+        @param kwargs: Extra keyword arguments to pass on to ICA (ignored for PCA)
         '''
         
         self.str_description = str_description

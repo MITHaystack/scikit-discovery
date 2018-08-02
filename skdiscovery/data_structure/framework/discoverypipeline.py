@@ -117,8 +117,7 @@ class DiscoveryPipeline:
         Run the pipeline
 
         @param num_runs: Number of times to run the pipeline
-        @param perturb_data: Boolean flag. If running the pipeline multiple times then
-                            perturb the data instead of the pipeline
+        @param perturb: Perturb the "pipeline", the "data", or "both"
         @param num_cores: Number of cores on the local machine to use. Defaults
                           to 1 core. Use 0 to select the minimum between the
                           number of runs and cpu cores.

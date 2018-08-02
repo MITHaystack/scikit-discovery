@@ -132,6 +132,7 @@ def getVoronoiCollection(data, lat_name, lon_name, bmap = None, v_name = None, f
                        wrap around the earth. If none, a point is automatically chosen
     @param proj1: PyProj projection of input coordinates
     @param proj2: PyProj projection of sphere
+    @param kwargs: Extra keyword arguments are passed to SphericalVoronoi class in scipy
 
     @return Matplotlib patch collection of tessellation, scipy.spatial.SphericalVoronoi object, integer index of objects in patch collection.
     '''

@@ -52,6 +52,7 @@ class GPSHPlotter(PipelineItem):
         @param offset: Offset for plotting larger area on map
         @param KF_tau: Tau used in kalman filter
         @param errorEllipses: Boolean indicating whether or not to plot errorEllipses
+        @param map_resolution: Resolution of map features (coastline) to use
         '''
 
         self.dir_sign = 0        

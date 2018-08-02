@@ -36,6 +36,7 @@ class DataAccumulator(PipelineItem):
         """
         Initialize DataAccumulator Item
 
+        @param str_description: String description of item
         @param save_wrapper: Save the data wrapper instead of just the data
         """
         self._save_wrapper = save_wrapper

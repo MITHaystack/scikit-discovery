@@ -49,7 +49,7 @@ def multiCaPlot(pipeline, mogiFlag=False, offset=.15, direction='H',pca_comp=0,s
     @param direction: Indicates the eigenvectors to plot. Only Horizontal component is currently supported ('H')
     @param pca_comp: Choose the PCA component to use (integer)
     @param scaleFactor: Size of the arrow scaling factor
-    @map_res: Map data resolution for Basemap ('c', 'i', 'h', 'f', or None)
+    @param map_res: Map data resolution for Basemap ('c', 'i', 'h', 'f', or None)
     '''
     
     # as this is a multi_ca_plot function, assumes GPCA

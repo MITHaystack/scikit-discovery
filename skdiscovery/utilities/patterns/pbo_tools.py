@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2017 Massachusetts Institute of Technology
+# Copyright (c) 2017, 2018 Massachusetts Institute of Technology
 #
 # Authors: Victor Pankratius, Justin Li, Cody Rude
 # This software is part of the NSF DIBBS Project "An Infrastructure for
@@ -36,13 +36,24 @@ import pandas as pd
 import skdiscovery.utilities.planetary.map_util as mo
 
 class SourceWrapper(object):
-
+    """
+    Wrapper for using old interface with updated source interfaces
+    """
     def __init__(self, source_method):
+        """
+        Initialize source wrapper
 
+        @param source_method: Source function that will be wrapped
+        """
         self.source_method = source_method
 
     def __call__(self, *args):
+        """
+        Call the source function using the old interface
 
+        @param args: Arguments for the wrapped source function
+        @return return list of resulting deformation for each point requested point
+        """
         xdata = args[0]
         args = args[1:]
 
@@ -65,7 +76,14 @@ class SourceWrapper(object):
         return results
 
 def getLength(position_y, position_x):
+    """
+    Get the length of the input position y and position x data
 
+    @param positing_y: y positions
+    @param position_x; x positions
+
+    @return The maximum length between the x and y positions
+    """
     length_y = 1
     length_x = 1
 
@@ -79,6 +97,17 @@ def getLength(position_y, position_x):
 
 
 def compute_distances(position_y, position_x, source_y, source_x, latlon=True):
+    """
+    Compute the y and x distance between the observation location and the source location
+
+    @param position_y: Obsevation y position
+    @param position_x: Observation x position
+    @param source_y: Source y position
+    @param source_x: Source x position
+    @param latlon: Interpret positions as latitudes and longitudes
+
+    @return The y and x distance between observation location and source locaiton
+    """
     if latlon==True:
         y_distance = mo.wgs84_distance( (source_y, source_x), (position_y, source_x) )
         x_distance = mo.wgs84_distance( (source_y, source_x), (source_y, position_x) )
@@ -98,14 +127,16 @@ def mogi(position_y, position_x, source_y, source_x, source_depth, amplitude, la
     '''
     Compute the surface deformation due to changes in a mogi source
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param y: Source y Position of (default: latitude)
-    @param x: Source x Position (default longitude)
+    @param position_y: Observation positions in the y coordinate
+    @param position_x: Observation positions in the x coordinate
+    @param source_y: Position of the source in the y coordinate
+    @param source_x: Position of the source in the x coordinate
     @param source_depth: Depth of source
     @param amplitude: Amplitude of mogi source
-    @param latlon: Source y is latitude and source x is longitude
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
+    @return Array containing the x, y, and z deformations
     '''
 
     y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)
@@ -126,15 +157,17 @@ def finite_sphere(position_y, position_x, source_y, source_x, source_depth, ampl
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 290
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param position_y: Observation positions in the y coordinate
+    @param position_x: Observation positions in the x coordinate
+    @param source_y: Position of the source in the y coordinate
+    @param source_x: Position of the source in the x coordinate
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
     @param alpha_rad: Alpha radius of the source
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
-
+    @return Array containing the x, y, and z deformations
     '''
     nu_v = .25
     C1 = (1+nu_v)/(2*(-7+5*nu_v))
@@ -159,14 +192,17 @@ def closed_pipe(position_y, position_x, source_y, source_x, source_depth, amplit
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 292
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param position_y: Observation positions in the y coordinate
+    @param position_x: Observation positions in the x coordinate
+    @param source_y: Position of the source in the y coordinate
+    @param source_x: Position of the source in the x coordinate
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
     @param pipe_delta: Pipe delta from source depth to top/bottom
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
+    @return Array containing the x, y, and z deformations
     '''
     nu_v = .25
 
@@ -193,14 +229,17 @@ def constant_open_pipe(position_y, position_x, source_y, source_x, source_depth,
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 295
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param position_y: Observation positions in the y coordinate
+    @param position_x: Observation positions in the x coordinate
+    @param source_y: Position of the source in the y coordinate
+    @param source_x: Position of the source in the x coordinate
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
     @param pipe_delta: Pipe delta from source depth to top/bottom
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
+    @return Array containing the x, y, and z deformations
     '''
     nu_v = .25
     C1 = (1+nu_v)/(2*(-7+5*nu_v))
@@ -236,15 +275,18 @@ def rising_open_pipe(position_y, position_x, source_y, source_x, source_depth, a
     For reference, see "Volcano Deformation", Dzurisin 2006, pg 295
     (http://link.springer.com/book/10.1007/978-3-540-49302-0)
 
-    @param xdata: List of the position data with each array element containing [ direction (x, y, or z), lat, lon ]
-    @param lat: Latitude of source
-    @param lon: Longitude of source
+    @param position_y: Observation positions in the y coordinate
+    @param position_x: Observation positions in the x coordinate
+    @param source_y: Position of the source in the y coordinate
+    @param source_x: Position of the source in the x coordinate
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
     @param pipe_delta: Pipe delta from source depth to top/bottom
     @param open_pipe_top: Depth of the top of the open pipe
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
+    @return Array containing the x, y, and z deformations
     '''
     nu_v = .25
 
@@ -283,8 +325,10 @@ def sill(position_y, position_x, source_y, source_x, source_depth, amplitude, la
     @param source_x: x position of source
     @param source_depth: Depth of source
     @param amplitude: Ampltiude of source
+    @param latlon: If true, then position_y, position_x, source_y, and source_x
+                   are given in latitude and longitude coordinates
 
-    @return list of resulting deformation for each point in xdata
+    @return Array containing the x, y, and z deformations
     '''
     y_distance, x_distance = compute_distances(position_y, position_x, source_y, source_x, latlon)
 

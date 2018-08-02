@@ -41,6 +41,8 @@ class Resample(PipelineItem):
         @param start_date: Starting date
         @param end_date: Ending date
         @param period: New sampling rate
+        @param frequency: Frequency of the resmampled data
+                          (see Pandas DataFrame reindex for more options)
         '''
         self.start_date = start_date
         self.end_date = end_date

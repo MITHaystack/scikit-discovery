@@ -43,6 +43,7 @@ class CalibrateGRACE(PipelineItem):
         @param str_description: String describing filter
         @param ewd_column_name: Name of new column for the calibrated GRACE data
         @param round_dates: Option for rounding to dates to the nearest day
+        @param apply_scale_factor: Boolean indicating whether or not a corrected scale factor should be applied
         '''
         self.ewd_column_name = ewd_column_name
         self.round_dates = round_dates

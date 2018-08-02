@@ -84,6 +84,7 @@ def plot_imfs(rawData, imfs, toPlot = [], mainTitle = 'IMFs', show = True, figsi
     @param rawData: Input data for plotting
     @param imfs: Input array of IMFs for plotting
     @param toPlot: List of which IMFs to plot (default is all)
+    @param mainTitle: Main title of the plot
     @param show: Boolean to show plot immediately after plot creation
     @param figsize: Size of figure
     '''
@@ -400,7 +401,11 @@ def run_plotImfs(inData, imfs = None, nbsym = False, toPlot = [], mainTitle = 'I
     @param imfs: Input array of IMFs for plotting
     @param nbsym: Boolean that would add extra data points near boundaries when calculating; breaks some datasets unless False
     @param toPlot: List of which IMFs to plot (default is all)
+    @param mainTitle: Main title of plot
+    @param figsize: Tuple containing the figure size
     @param show: Boolean to show plot immediately after plot creation
+
+    @return Intrinsic mode functions
     '''
     real = np.isfinite(inData)
     if imfs is None:

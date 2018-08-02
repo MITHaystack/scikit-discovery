@@ -38,9 +38,12 @@ def plot_spiral(plotData, plotIndex, T, mainTitle = 'Spiral plot', barLabel = 'A
 
     @param plotData: Input data values/amplitudes
     @param plotIndex: Input index (series time coordinates)
-    @param period: Period value with which to wrap data around the plot
+    @param T: Period value with which to wrap data around the plot
+    @param mainTitle: Title for plot
+    @param barLabel: Colorbar label
+    @param plotTS: Optional flag to plot the time series of the data in a separate window
+    @param show: Boolean to show plot immediately after plot creation
     '''
-
     r     = plotIndex - plotIndex.min()
     theta = 2 * np.pi * r / T
     z     = plotData
@@ -76,6 +79,8 @@ def run_spiral(inData, period, inIndex = None, mainTitle = 'Spiral plot', barLab
     @param inData: Input data to use in plot
     @param period: Period value with which to wrap data around the plot
     @param inIndex: Input index (series time coordinates)
+    @param mainTitle: Title for plot
+    @param barLabel: Colorbar label
     @param plotTS: Optional flag to plot the time series of the data in a separate window
     @param show: Boolean to show plot immediately after plot creation
     '''
@@ -91,6 +96,8 @@ def run_spiralInteractive(inData, period, pParams = [], inIndex = None, mainTitl
     @param period: Period value with which to wrap data around the plot
     @param pParams: List of plot's period parameters [min, max, step] necessary for interactive
     @param inIndex: Input index (series time coordinates)
+    @param mainTitle: Title for plot
+    @param barLabel: Colorbar label
     @param plotTS: Optional flag to plot the time series of the data in a separate window
     '''
 
