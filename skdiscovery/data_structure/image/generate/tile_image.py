@@ -48,9 +48,9 @@ class TileImage(PipelineItem):
         @param deviation_as_percent: Treat min_deviation as a percentage of the max value of the original image
         '''
 
-        assert min_deviation is None and min_fraction is None or \
-               min_deviation is not None and min_fraction is not None, \
-               'Both min_deviation and min_fraction have to be None or not None'
+        if deviation_as_percent and min_deviation is None:
+            raise RuntimeError('Must supply min_deviation when deviation_as_percent is True')
+
 
         self.size = size
         self._min_deviation = min_deviation
@@ -74,6 +74,12 @@ class TileImage(PipelineItem):
         else:
             threshold_function = None
 
+        if threshold_function is not None and self._min_fraction is None:
+            raise RuntimeError('Must supply min_fraction with threshold function')
+
+        if threshold_function is not None and self._min_deviation is not None:
+            raise RuntimeError('Cannot supply both min_deviation and threshold function')
+
         results = OrderedDict()
         metadata = OrderedDict()
         
@@ -88,9 +94,22 @@ class TileImage(PipelineItem):
                 min_deviation = self._min_deviation
 
             if self._min_fraction is not None:
-                valid_index = np.count_nonzero(np.abs(patches) < min_deviation, axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
+
+                if min_deviation is not None:
+                    valid_index = np.count_nonzero(np.abs(patches) < min_deviation, axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
+
+                else:
+                    threshold = threshold_function(np.abs(data))
+                    threshold_data = np.abs(patches.copy())
+
+                    threshold_data[threshold_data < threshold] = np.nan
+
+                    valid_index = np.count_nonzero(~np.isnan(threshold_data), axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
+
+
                 patches = patches[valid_index]
                 extents = extents[valid_index]
+
 
             try:
                 metadata[label] = obj_data.info(label)

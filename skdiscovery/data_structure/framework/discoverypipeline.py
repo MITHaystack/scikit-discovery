@@ -40,6 +40,10 @@ from tqdm import tqdm
 
 from . import config
 
+from skdiscovery.utilities.cloud.ssh_reverse import print_verbose
+
+from dask.distributed import Client
+
 
 def _cluster_run(data_fetcher, stage_containers, shared_lock = None, run_id=-1, verbose = False):
     ''' 
@@ -105,9 +109,10 @@ class DiscoveryPipeline:
         self.stageConfigurationHistory = []
         self.RA_results = []
         self.__cluster = None
-        self._dispy_http = None        
+        self._run_id = 0
 
-    def run(self, num_runs=1, perturb = 'pipeline', num_cores = 1, amazon=False, verbose=False):
+
+    def run(self, num_runs=1, perturb = 'pipeline', num_cores = 1, offload=None, verbose=False):
         '''
         Run the pipeline
 
@@ -117,15 +122,42 @@ class DiscoveryPipeline:
         @param num_cores: Number of cores on the local machine to use. Defaults
                           to 1 core. Use 0 to select the minimum between the
                           number of runs and cpu cores.
-        @param amazon: Offload the pipeline on amazon
+        @param offload: Offload the pipeline to 'amazon' or 'cluster'
         @param verbose: Display the pipeline for each run
         '''
 
-        perturb = perturb.lower()
+
+
+        # Function to generate inputs for running
+        def generatePipelineInputs(shared_lock=None):
+            self.stageConfigurationHistory.append(self.getMetadata())
+            if verbose:
+                self.plotPipelineInstance()
+            self._run_id += 1
+            yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1, verbose
+
+            for i in range(1, num_runs):
+                if perturb in ('pipeline', 'both'):
+                    self.perturb()
+                if perturb in ('data', 'both'):
+                    self.perturbData()
+
+                self.stageConfigurationHistory.append(self.getMetadata())
+                if verbose:
+                    self.plotPipelineInstance()
+                self._run_id += 1
+                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, self._run_id - 1, verbose
+
+            # If running multiple times, perturb the pipeline or the data
+            if num_runs > 1:
+                if perturb in ('pipeline', 'both'):
+                    self.perturb()
+                if perturb in ('data', 'both'):
+                    self.perturbData()
 
 
         # Run the job on Amazon
-        if amazon == True:
+        if offload == 'amazon':
 
             if self.__cluster == None:
                 self._startCluster(config.getDispyPassword())
@@ -133,30 +165,20 @@ class DiscoveryPipeline:
             self._createDispyLink()
 
             # Run Jobs on Amazon
+
             jobs = []
 
-            for i in range(0,num_runs):
-                if num_runs > 1:
-                    run_index = i
-                else:
-                    run_index = -1
+            for i, args in enumerate(generatePipelineInputs()):
 
-                if verbose:
-                    self.plotPipelineInstance()
-                job = self.__cluster.submit(copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), run_id = run_index)
+                job = self.__cluster.submit(*args)
                 job.id = i
                 jobs.append(job)
                 # save metadata configuration for history
                 self.stageConfigurationHistory.append(self.getMetadata())
 
-                if num_runs > 1:
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
-
             for job in jobs:
                 results = job()
+                print_verbose(job.stdout, verbose)
                 # save results in the result accumulator
                 if(job.exception is not None):
                     print(job.exception)
@@ -166,7 +188,25 @@ class DiscoveryPipeline:
             self.__cluster.close()
             self.__cluster = None
 
+
+        elif offload == 'cluster':
+
+            dask_address = config.getConfigValue('Dask','scheduler_address')
+
+            if dask_address is None:
+                raise RuntimeError('No address for the scheduler defined. Is the Dask scheduler running?')
+
+            client = Client(dask_address)
+
+            job_list = [client.submit(_cluster_run, *outputs) for outputs in generatePipelineInputs()]
+
+            for job in job_list:
+                self.RA_results.append(job.result())
+
+            client.close()
+
         # Run the job on the local machine
+
         else:
 
             if num_runs != 1 and num_cores != 0 and self.data_fetcher.multirun_enabled() == False:
@@ -176,54 +216,28 @@ class DiscoveryPipeline:
                 shared_manager = None
                 shared_lock = None
 
-            # Function to generate inputs for running
-            def generatePipelineInputs():
-                self.stageConfigurationHistory.append(self.getMetadata())
-                if verbose:
-                    self.plotPipelineInstance()
-                yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, 0
 
-                for i in range(1, num_runs):
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
+            if (num_cores == 0 or num_cores > 1) and num_runs != 1:
 
-                    self.stageConfigurationHistory.append(self.getMetadata()) 
-                    if verbose:
-                        self.plotPipelineInstance()
-                    yield copy.deepcopy(self.data_fetcher), copy.deepcopy(self.stage_containers), shared_lock, i
+                if num_cores == 0:
+                    # Automatically select the appropriate number of workers
+                    num_workers = min(cpu_count(), num_runs)
 
-                # If running multiple times, perturb the pipeline or the data
-                if num_runs > 1:
-                    if perturb in ('pipeline', 'both'):
-                        self.perturb()
-                    if perturb in ('data', 'both'):
-                        self.perturbData()
-                    
-            # Run the jobs
-            with ExitStack() as stack:
+                elif num_cores > 1:
+                    # Limit the number of workers by the provided number
+                    num_workers = min(num_cores, num_runs)
 
-                # Create workers for processing multiple pipelines locally
-                if num_runs != 1:
-                    if num_cores == 0:
-                        # Create a pool with either the number of cores on
-                        # the machine, or the number of runs, whichever is
-                        # less
-                        pool = Pool(min(cpu_count(), num_runs))
-                        stack.callback(pool.close)
-                    elif num_cores > 1:
-                        # If number of cores is specified generate that many
-                        # workers
-                        pool = Pool(min(num_cores, num_runs))
-                        stack.callback(pool.close)
-
-                if (num_cores == 0 or num_cores > 1) and num_runs != 1:
-                    results = pool.map(_wrap_cluster, generatePipelineInputs())
                 else:
-                    results = list(map(_wrap_cluster, generatePipelineInputs()))
+                    raise RuntimeError('Number of specified cores must be greather than or equal to 0')
 
-                self.RA_results += results                
+
+                with Pool(num_workers) as pool:
+                    results = list(pool.imap(_wrap_cluster, generatePipelineInputs(shared_lock)))
+
+            else:
+                results = list(map(_wrap_cluster, generatePipelineInputs()))
+
+            self.RA_results += results
         
     def perturb(self):
         ''' Perturb the paramters in the stage containers '''
@@ -415,12 +429,16 @@ class DiscoveryPipeline:
         import dispy
         
         # Amazon run function
-        def amazon_run(data_fetcher, stage_containers, run_id=-1):
+        def amazon_run(data_fetcher, stage_containers, shared_lock=None, run_id=-1, verbose=False):
             global amazon_lock
             import time
+            from skdiscovery.utilities.cloud.ssh_reverse import print_verbose
+
             if data_fetcher.multirun_enabled() == False:
                 with amazon_lock:
+                    print_verbose('ID: {}; Entering lock at {}'.format(run_id, time.time()), verbose)
                     data_container = data_fetcher.output()
+                    print_verbose('ID: {}; Exiting lock at {}'.format(run_id, time.time()), verbose)
 
             else:
                 data_container = data_fetcher.output()
