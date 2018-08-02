@@ -77,20 +77,49 @@ class PipelineItem(object):
 
 
 class TablePipelineItem(PipelineItem):
+    """
+    Pipeline item for Table data
+    """
 
     def __init__(self, str_description, ap_paramList, column_list=None, error_column_list=None):
+        """
+        Initialize Table Pipeline item
+
+        @param: str_description: String describing filter
+        @param: ap_paramList: List of AutoParams and AutoLists
+        @param column_list: List of columns to process
+        @param error_column_list: List of the associated error columns
+        """
         super(TablePipelineItem, self).__init__(str_description, ap_paramList)
         self._column_list = column_list
         self._error_column_list = error_column_list
 
 
     def _getColumns(self, obj_data):
+        """
+        Get the columns that need to be processed
+
+        Returns the columns set in this item, otherwise returns
+        the default columns defined the data wrapper
+
+        @param obj_data: Table data wrapper
+        @return Columns to process
+        """
         if self._column_list is None:
             return obj_data.getDefaultColumns()
         else:
             return self._column_list
 
     def _getErrorColumns(self, obj_data):
+        """
+        Get the columns that need to be processed
+
+        Returns the columns set in this item, otherwise returns
+        the default columns defined the data wrapper
+
+        @param obj_data: Table data wrapper
+        @return Columns to process
+        """
         if self._column_list is None:
             return obj_data.getDefaultErrorColumns()
         else:
