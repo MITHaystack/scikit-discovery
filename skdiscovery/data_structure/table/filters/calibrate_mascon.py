@@ -41,6 +41,7 @@ class CalibrateGRACEMascon(PipelineItem):
 
         @param str_description: String describing filter
         @param round_dates: Option for rounding to dates to the nearest day
+        @param apply_scale_factor: Boolean indicating whether or not a corrective scale factor should be applied
         '''
         self.round_dates = round_dates
         self.apply_scale_factor = apply_scale_factor
