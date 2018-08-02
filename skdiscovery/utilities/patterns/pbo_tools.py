@@ -79,8 +79,8 @@ def getLength(position_y, position_x):
     """
     Get the length of the input position y and position x data
 
-    @param positing_y: y positions
-    @param position_x; x positions
+    @param position_y: y positions
+    @param position_x: x positions
 
     @return The maximum length between the x and y positions
     """
