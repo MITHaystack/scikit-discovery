@@ -10,6 +10,7 @@ gsed -ri 's/\\\+discoverypipeline\.//g' *.tex
 gsed -ri 's/\\\+gca\.//g' *.tex
 gsed -ri 's/\\\+gpshplotter\.//g' *.tex
 gsed -ri 's/\\\+calibrate\\\+\\_\\\+grace\.//g' *.tex
+gsed -ri 's/\\\+calibrate\\\+\\_\\\+mascon\.//g' *.tex
 gsed -ri 's/\\\+grace\.//g' *.tex
 gsed -ri 's/\\\+hcluster\.//g' *.tex
 gsed -ri 's/\\\+hyperbolictan\.//g' *.tex
@@ -42,3 +43,9 @@ gsed -ri 's/\\\+table\\\+\\_\\\+filter\.//g' *.tex
 gsed -ri 's/\\\+weighted\\\+\\_\\\+average\.//g' *.tex
 gsed -ri 's/\\\+normalize\.//g' *.tex
 gsed -ri 's/\\\+resample\.//g' *.tex
+gsed -ri 's/\\\+rotate\\\+\\_\\\+image\.//g' *.tex
+gsed -ri 's/\\\+rotate\\\+\\_\\\+pca\.//g' *.tex
+gsed -ri 's/\\\+saver\.//g' *.tex
+gsed -ri 's/\\\+select\\\+\\_\\\+channel\.//g' *.tex
+gsed -ri 's/\\\+squares\\\+\\_\\\+from\\\+\\_\\\+poly\.//g' *.tex
+gsed -ri 's/\\\+tile\\\+\\_\\\+image\.//g' *.tex
