@@ -27,12 +27,15 @@
 # skdiscovery imports
 from skdiscovery.data_structure.framework.base import PipelineItem
 
+# 3rd party imports
+import numpy as np
+
 class SelectChannel(PipelineItem):
     """
     Select a specific channel out of a 3 dimensional image
     """
 
-    def __init__(self, str_description, channel, channel_index = 0):
+    def __init__(self, str_description, channels, channel_index = 0):
         """
         Initialize SelectChannel item
 
@@ -41,7 +44,8 @@ class SelectChannel(PipelineItem):
         @param channel_index: Which index (or dimension) the channel is on
         """
 
-        self._channel = channel
+        self._channels = channels
+
         self._channel_index = channel_index
 
         super(SelectChannel, self).__init__(str_description)
@@ -55,5 +59,5 @@ class SelectChannel(PipelineItem):
         """
 
         for label, data in obj_data.getIterator():
+            obj_data.updateData(label, data.take(self._channels, self._channel_index))
 
-            obj_data.updateData(label, data.take(self._channel, self._channel_index))
