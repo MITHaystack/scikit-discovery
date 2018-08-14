@@ -69,7 +69,7 @@ class Saver(PipelineItem):
 
         if len(obj_data.get()) > 0:
 
-            new_data = np.stack([data for label, data in obj_data.get().items()])
+            new_data = np.stack([data for label, data in obj_data.getIterator()])
 
             h5_file = h5py.File(filepath, mode = 'w-')
 
