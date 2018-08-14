@@ -46,9 +46,16 @@ class RotateImage(PipelineItem):
         new_meta = OrderedDict()
         for label, data in obj_data.getIterator():
 
+            if data.ndim == 2:
+                axes = (0,1)
+            elif data.ndim == 3:
+                axes = (1,2)
+            else:
+                raise RuntimeError('Only 2 and 3d images supported')
+
             for i in range(0,4):
                 new_label = label + ', Rotated: ' + str(i*90)
-                new_data[new_label] = np.rot90(data, i)
+                new_data[new_label] = np.rot90(data, i, axes=axes)
 
                 new_meta[new_label] = OrderedDict()
                 new_meta[new_label]['Rotated'] = i*90
