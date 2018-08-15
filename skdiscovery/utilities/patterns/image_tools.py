@@ -24,12 +24,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Standard library imports
+from glob import glob
+import os
+
 
 import statsmodels.api as sm
 import numpy as np
 import imreg_dft as ird
 import shapely
 import scipy as sp
+import h5py
+from tqdm import tqdm
 
 def buildMatchedPoints(in_matches, query_kp, train_kp):
     '''
@@ -149,3 +155,19 @@ def generateSquaresAroundPoly(poly, size=100, stride=20):
     x_mesh, y_mesh = np.meshgrid(x_coords, y_coords)
 
     return [shapely.geometry.box(x, y, x+size, y+size) for x, y in zip(x_mesh.ravel(), y_mesh.ravel())]
+
+def createLinkedHDF(filename, hdf_folder):
+    """
+    Create an hdf file by linking to datasets found in hdf files created by image saver
+
+    @param filename: Filename for new hdf file
+    @param hdf_folder: Folder containing hdf5 files created by saver pipeline item
+    """
+
+    file_list = glob(os.path.join(hdf_folder, '*.h5'))
+    file_list.sort()
+
+    with h5py.File(filename,'w-') as my_file:
+        for filepath in tqdm(file_list):
+            key_name = os.path.split(filepath)[1][:-3]
+            my_file[key_name + '_data'] = h5py.ExternalLink(filepath, key_name)
