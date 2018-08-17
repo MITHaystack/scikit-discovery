@@ -36,7 +36,8 @@ class TileImage(PipelineItem):
     '''
     Create several smaller images from a larger image
     '''
-    def __init__(self, str_description, ap_paramList, size, min_deviation=None, min_fraction=None, deviation_as_percent=False):
+    def __init__(self, str_description, ap_paramList, size, min_deviation=None, min_fraction=None, deviation_as_percent=False,
+                 axes=(-2,-1)):
         '''
         Initialize TileImage item
 
@@ -46,6 +47,7 @@ class TileImage(PipelineItem):
         @param min_deviation = Minimum deviation to use when determining to keep tile
         @param min_fraction: Minimum fraction of pixels above min_deviation needed to keep tile
         @param deviation_as_percent: Treat min_deviation as a percentage of the max value of the original image
+        @param axes: Axes to compute the mean over (when using min_fraction)
         '''
 
         if deviation_as_percent and min_deviation is None:
@@ -56,6 +58,7 @@ class TileImage(PipelineItem):
         self._min_deviation = min_deviation
         self._min_fraction = min_fraction
         self._deviation_as_percent = deviation_as_percent
+        self._axes = axes
         
 
         super(TileImage, self).__init__(str_description, ap_paramList)
@@ -96,7 +99,7 @@ class TileImage(PipelineItem):
             if self._min_fraction is not None:
 
                 if min_deviation is not None:
-                    valid_index = np.count_nonzero(np.abs(patches) < min_deviation, axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
+                    valid_index = np.count_nonzero(np.abs(patches) < min_deviation, axis=self._axes) / np.prod(patches.shape[1:]) > self._min_fraction
 
                 else:
                     threshold = threshold_function(np.abs(data))
@@ -104,7 +107,7 @@ class TileImage(PipelineItem):
 
                     threshold_data[threshold_data < threshold] = np.nan
 
-                    valid_index = np.count_nonzero(~np.isnan(threshold_data), axis=(1,2)) / np.prod(patches.shape[1:]) > self._min_fraction
+                    valid_index = np.count_nonzero(~np.isnan(threshold_data), axis=self._axes) / np.prod(patches.shape[1:]) > self._min_fraction
 
 
                 patches = patches[valid_index]
