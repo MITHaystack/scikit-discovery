@@ -38,16 +38,17 @@ class AddRandomTile(PipelineItem):
     Add a randomly selected tile to daa
     """
 
-    def __init__(self, str_description, tiles):
+    def __init__(self, str_description, ap_paramList, tiles):
         """
         Initialize Item
 
         @param str_description: String description of item
+        @param self.ap_paramList[seed]: Numpy seed
         @param tiles: Numpy array here the first dimension is the one randomly selected from
         """
 
         self.tiles = tiles
-        super(AddRandomTile, self).__init__(str_description)
+        super(AddRandomTile, self).__init__(str_description, ap_paramList)
 
     def process(self, obj_data):
         """
@@ -55,6 +56,10 @@ class AddRandomTile(PipelineItem):
 
         @param obj_data: Image data wrapper
         """
+
+        seed = self.ap_paramList[0]()
+
+        np.random.seed(seed)
 
         tile_indices = np.arange(self.tiles.shape[0])
         np.random.shuffle(tile_indices)
