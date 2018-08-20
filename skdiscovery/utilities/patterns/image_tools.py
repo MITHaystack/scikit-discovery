@@ -156,15 +156,18 @@ def generateSquaresAroundPoly(poly, size=100, stride=20):
 
     return [shapely.geometry.box(x, y, x+size, y+size) for x, y in zip(x_mesh.ravel(), y_mesh.ravel())]
 
-def createLinkedHDF(filename, hdf_folder):
+def createLinkedHDF(filename, hdf_folders):
     """
     Create an hdf file by linking to datasets found in hdf files created by image saver
 
     @param filename: Filename for new hdf file
-    @param hdf_folder: Folder containing hdf5 files created by saver pipeline item
+    @param hdf_folder: List of folders containing hdf5 files created by saver pipeline item
     """
 
-    file_list = glob(os.path.join(hdf_folder, '*.h5'))
+    file_list = []
+    for hdf_folder in hdf_folders:
+        file_list += glob(os.path.join(hdf_folder, '*.h5'))
+
     file_list.sort()
 
     with h5py.File(filename,'w-') as my_file:
