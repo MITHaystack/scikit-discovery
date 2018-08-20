@@ -168,9 +168,11 @@ def createLinkedHDF(filename, hdf_folders):
     for hdf_folder in hdf_folders:
         file_list += glob(os.path.join(hdf_folder, '*.h5'))
 
+
     file_list.sort()
 
     with h5py.File(filename,'w-') as my_file:
         for filepath in tqdm(file_list):
-            key_name = os.path.split(filepath)[1][:-3]
-            my_file[key_name + '_data'] = h5py.ExternalLink(filepath, key_name)
+            with h5py.File(filepath, 'r') as link_file:
+                for key in link_file.keys():
+                    my_file[os.path.join(filepath, key) +'_data'] = h5py.ExternalLink(filepath, key)
