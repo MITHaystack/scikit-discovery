@@ -188,7 +188,7 @@ class DiscoveryPipeline:
             self.__cluster = None
 
 
-        elif offload == 'cluster':
+        elif offload in ('cluster', 'cluster_single'):
 
             dask_address = config.getConfigValue('Dask','scheduler_address')
 
@@ -197,10 +197,17 @@ class DiscoveryPipeline:
 
             client = Client(dask_address)
 
-            job_list = [client.submit(_cluster_run, *outputs) for outputs in generatePipelineInputs()]
+            if offload == 'cluster':
+                job_list = [client.submit(_cluster_run, *inputs) for inputs in generatePipelineInputs()]
 
-            for job in job_list:
-                self.RA_results.append(job.result())
+                for job in job_list:
+                    self.RA_results.append(job.result())
+
+            else:
+                for inputs in generatePipelineInputs():
+                    job = client.submit(_cluster_run, *inputs)
+                    self.RA_result.append(job.result())
+
 
             client.close()
 
