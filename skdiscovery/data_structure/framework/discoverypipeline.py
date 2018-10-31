@@ -195,21 +195,19 @@ class DiscoveryPipeline:
             if dask_address is None:
                 raise RuntimeError('No address for the scheduler defined. Is the Dask scheduler running?')
 
-            client = Client(dask_address)
+            with Client(dask_address) as client
 
-            if offload == 'cluster':
-                job_list = [client.submit(_cluster_run, *inputs) for inputs in generatePipelineInputs()]
+                if offload == 'cluster':
+                    job_list = [client.submit(_cluster_run, *inputs) for inputs in generatePipelineInputs()]
 
-                for job in job_list:
-                    self.RA_results.append(job.result())
+                    for job in job_list:
+                        self.RA_results.append(job.result())
 
-            else:
-                for inputs in generatePipelineInputs():
-                    job = client.submit(_cluster_run, *inputs)
-                    self.RA_result.append(job.result())
+                else:
+                    for inputs in generatePipelineInputs():
+                        job = client.submit(_cluster_run, *inputs)
+                        self.RA_result.append(job.result())
 
-
-            client.close()
 
         # Run the job on the local machine
 
