@@ -322,7 +322,7 @@ class DiscoveryPipeline:
         #Graph setup
         g1 = gv.Digraph(format='svg')
         g1.graph_attr['rankdir'] = 'LR'
-        g1.node_attr['shape'] = 'rounded'
+        g1.node_attr['shape'] = 'box'
         g1.node_attr['fontname'] = 'Arial'
         g1.node_attr['fontsize'] = '9'
         g1.node_attr['style'] = 'filled'
